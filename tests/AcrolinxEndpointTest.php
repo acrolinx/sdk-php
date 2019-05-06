@@ -90,17 +90,21 @@ class AcrolinxEndpointTest extends TestCase
         $props = new AcrolinxEndPointProps('dummySignature', $this->acrolinxURL,
             'en', '');
 
+        fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
+        fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
+
         $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
         $result = $acrolinxEndPoint->signIn($ssoOptions);
 
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
-        $data = $responseJSON['data'];
+        $data = $responseJSON['data']['accessToken'];
         $status = $result['status'];
+        fwrite(STDERR, print_r($data, TRUE));
 
-        $this->assertEquals(true, isset($data));
         $this->assertEquals(200, $status);
+        $this->assertEquals(true, isset($data));
     }
 
 }

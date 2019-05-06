@@ -72,7 +72,7 @@ class AcrolinxEndpoint
      * @param string $authToken
      * @return array
      */
-    public function getCommonHeaders(string $authToken)
+    public function getCommonHeaders($authToken)
     {
         $headers = array(
             'X-Acrolinx-Client: ' . $this->props->clientSignature,
@@ -120,7 +120,7 @@ class AcrolinxEndpoint
         }
 
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        $headers = $this->getCommonHeaders($authToken || '');
+        $headers = $this->getCommonHeaders($authToken);
         if (!is_null($options)) {
             $ssoHeaders = $this->getSsoRequestHeaders($options);
             $headers = array_merge($headers, $ssoHeaders);
@@ -153,7 +153,7 @@ class AcrolinxEndpoint
         }
 
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getCommonHeaders($authToken || ''));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getCommonHeaders($authToken));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
