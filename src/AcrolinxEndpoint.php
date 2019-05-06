@@ -27,7 +27,7 @@ class AcrolinxEndpoint
      * AcrolinxEndpoint constructor.
      * @param $props
      */
-    public function __construct($props)
+    public function __construct(AcrolinxEndPointProps $props)
     {
         $this->props = $props;
     }
@@ -51,10 +51,28 @@ class AcrolinxEndpoint
     }
 
     /**
+     * @param SsoSignInoptions $options
      * @return array
-     * Get common headers
      */
-    public function getCommonHeaders($authToken)
+    public function signIn(SsoSignInoptions $options)
+    {
+        return $this->postData('/api/v1/auth/sign-ins', null, null, $options);
+
+    }
+
+    /**
+     * @param $authToken
+     */
+    public function getCapabilities($authToken)
+    {
+
+    }
+
+    /**
+     * @param string $authToken
+     * @return array
+     */
+    public function getCommonHeaders(string $authToken)
     {
         $headers = array(
             'X-Acrolinx-Client: ' . $this->props->clientSignature,
@@ -75,21 +93,16 @@ class AcrolinxEndpoint
 
     }
 
-    /**
-     * @param $options
-     */
-    public function signin($options)
+    public function getSsoRequestHeaders(SsoSignInoptions $options): array
     {
+        return array(
+            $options->getUsernameKey() . ': ' . $options->getUserId(),
+            $options->getPasswordKey() . ': ' . $options->getPassword()
+        );
 
     }
 
-    /**
-     * @param $authToken
-     */
-    public function getCapabilities($authToken)
-    {
 
-    }
 
     /**
      * @param $path
@@ -97,7 +110,7 @@ class AcrolinxEndpoint
      * @param $data
      * @return array
      */
-    public function postData($path, $authToken, $data)
+    public function postData(string $path, $authToken, $data, SsoSignInoptions $options)
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_POST, 1);
@@ -107,7 +120,14 @@ class AcrolinxEndpoint
         }
 
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getCommonHeaders($authToken));
+        $headers = $this->getCommonHeaders($authToken || '');
+        if (!is_null($options)) {
+            $ssoHeaders = $this->getSsoRequestHeaders($options);
+            $headers = array_merge($headers, $ssoHeaders);
+
+        }
+
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
@@ -123,7 +143,7 @@ class AcrolinxEndpoint
 
     }
 
-    public function getData($path, $data, $authToken)
+    public function getData(string $path, $data, $authToken)
     {
         $curl = curl_init();
 
@@ -133,7 +153,7 @@ class AcrolinxEndpoint
         }
 
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getCommonHeaders($authToken));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getCommonHeaders($authToken || ''));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
@@ -149,7 +169,7 @@ class AcrolinxEndpoint
 
     }
 
-    public function putData($path, $authToken, $data)
+    public function putData(string $path, string $authToken, $data)
     {
 
         $curl = curl_init();
