@@ -46,27 +46,29 @@ class AcrolinxEndpointTest extends TestCase
             $dotenv->overload();
             $serverEnv = getenv('ACROLINX_TEST_SERVER_URL');
             $tokenEnv = getenv('ACROLINX_ACCESS_TOKEN');
+            $ssoUser = getenv('ACROLINX_SSO_USER');
+            $ssoPassword = getenv('ACROLINX_SSO_PASSWORD');
         }
 
         if (isset($serverEnv)) {
             $this->acrolinxURL = $serverEnv;
         } else {
-            echo 'No Acrolinx Server Address set.';
+            fwrite(STDERR, print_r(PHP_EOL . 'No Acrolinx Server Address set.' . PHP_EOL));
         }
         if (isset($tokenEnv)) {
             $this->acrolinxAuthToken = $tokenEnv;
         } else {
-            echo 'No Acrolinx Auth Token set.';
+            fwrite(STDERR, print_r(PHP_EOL . 'No Acrolinx Auth Token set.' . PHP_EOL));
         }
         if (isset($ssoUser)) {
             $this->acrolinxSsoUser = $ssoUser;
         } else {
-            echo 'No Acrolinx SSO user set';
+            fwrite(STDERR, print_r(PHP_EOL . 'No Acrolinx SSO user set' . PHP_EOL));
         }
         if (isset($ssoPassword)) {
             $this->acrolinxPassword = $ssoPassword;
         } else {
-            echo 'No Acrolinx SSO password set';
+            fwrite(STDERR, print_r(PHP_EOL . 'No Acrolinx SSO password set' . PHP_EOL));
         }
 
     }
@@ -109,8 +111,8 @@ class AcrolinxEndpointTest extends TestCase
         $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
             'en', '');
 
-        fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
-        fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
+        // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
+        // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
 
         $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
@@ -120,12 +122,33 @@ class AcrolinxEndpointTest extends TestCase
         $responseJSON = json_decode($response, true);
         $data = $responseJSON['data']['accessToken'];
         $status = $result['status'];
-        fwrite(STDERR, print_r($data, TRUE));
+        // fwrite(STDERR, print_r($data, TRUE));
 
         $this->assertEquals(true, isset($data));
-        // Get an 2xx success status
-        $this->assertGreaterThan(199, $status);
-        $this->assertLessThan(300, $status);
+        $this->assertEquals(200, $status);
+    }
+
+    public function testSignInError()
+    {
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+            'en', '');
+
+        // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
+        // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
+
+        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, 'wrong password');
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $result = $acrolinxEndPoint->signIn($ssoOptions);
+
+        $response = $result['response'];
+        $responseJSON = json_decode($response, true);
+        $error = $responseJSON['error'];
+        $status = $result['status'];
+
+        // fwrite(STDERR, print_r($error, TRUE));
+
+        $this->assertEquals(true, isset($error));
+        $this->assertEquals(401, $status);
     }
 
 }
