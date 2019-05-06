@@ -1,35 +1,44 @@
 <?php namespace Acrolinx\SDK;
 
+/*
+* Copyright 2019-present Acrolinx GmbH
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 use PHPUnit\Framework\TestCase;
 
 class AcrolinxEndpointTest extends TestCase
 {
     /**
-     * Just check if the YourClass has no syntax error
-     *
-     * This is just a simple check to make sure your library has no syntax error. This helps you troubleshoot
-     * any typo before you even use this library in a real project.
-     *
+     * Test get server info API
      */
-    public function testIsThereAnySyntaxError()
+    public function testGetServerInfo()
     {
-        $var = new AcrolinxEndpoint();
-        $this->assertTrue(is_object($var));
-        unset($var);
-    }
+        $props = new AcrolinxEndPointProps('dummySignature', 'https://test-next-ssl.acrolinx.com',
+            'en', '');
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $result = $acrolinxEndPoint->getServerInfo();
 
-    /**
-     * Just check if the YourClass has no syntax error
-     *
-     * This is just a simple check to make sure your library has no syntax error. This helps you troubleshoot
-     * any typo before you even use this library in a real project.
-     *
-     */
-    public function testMethod1()
-    {
-        $var = new AcrolinxEndpoint();
-        $this->assertTrue($var->method1("hey") == 'Hello World');
-        unset($var);
+        $response = $result['response'];
+        $responseJSON = json_decode($response, true);
+        $error = $responseJSON['error'];
+        $data = $responseJSON['data'];
+        $status = $result['status'];
+
+        $this->assertEquals(true, is_null($error));
+        $this->assertEquals(true, isset($data));
+        $this->assertEquals(200, $status);
     }
 
 }
