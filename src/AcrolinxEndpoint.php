@@ -78,7 +78,6 @@ class AcrolinxEndpoint
     {
         $headers = array(
             'X-Acrolinx-Client: ' . $this->props->clientSignature,
-            'X-Acrolinx-Client-Locale: ' . $this->props->clientLocale,
             'X-Acrolinx-Base-Url:' . $this->props->baseUrl,
             'Content-Type: application/json'
         );
