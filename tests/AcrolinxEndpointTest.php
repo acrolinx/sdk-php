@@ -16,8 +16,9 @@
 * limitations under the License.
 */
 
-use Dotenv;
+use Exception;
 use PHPUnit\Framework\TestCase;
+use Dotenv;
 
 class AcrolinxEndpointTest extends TestCase
 {
@@ -26,6 +27,10 @@ class AcrolinxEndpointTest extends TestCase
     protected $acrolinxAuthToken;
     protected $acrolinxSsoUser;
     protected $acrolinxPassword;
+
+    // You'll get the clientSignature for your integration after a successful certification meeting.
+    // See: https://support.acrolinx.com/hc/en-us/articles/205687652-Getting-Started-with-Custom-Integrations
+    protected $DEVELOPMENT_SIGNATURE = 'SW50ZWdyYXRpb25EZXZlbG9wbWVudERlbW9Pbmx5';
 
     protected function setUp(): void
     {
@@ -71,7 +76,7 @@ class AcrolinxEndpointTest extends TestCase
      */
     public function testGetServerInfo()
     {
-        $props = new AcrolinxEndPointProps('dummySignature', $this->acrolinxURL,
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
             'en', '');
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
         $result = $acrolinxEndPoint->getServerInfo();
@@ -85,9 +90,23 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(200, $status);
     }
 
+    public function testGetServerInfoError()
+    {
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, 'SomeFakeURL',
+            'en', '');
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $message = '';
+        try {
+            $acrolinxEndPoint->getServerInfo();
+        } catch (Exception $e) {
+            $message = $e->getMessage();
+        }
+        $this->assertContains('Could not resolve host', $message);
+    }
+
     public function testSignIn()
     {
-        $props = new AcrolinxEndPointProps('dummySignature', $this->acrolinxURL,
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
             'en', '');
 
         fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
@@ -103,8 +122,10 @@ class AcrolinxEndpointTest extends TestCase
         $status = $result['status'];
         fwrite(STDERR, print_r($data, TRUE));
 
-        $this->assertEquals(200, $status);
         $this->assertEquals(true, isset($data));
+        // Get an 2xx success status
+        $this->assertGreaterThan(199, $status);
+        $this->assertLessThan(300, $status);
     }
 
 }

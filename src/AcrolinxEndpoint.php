@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+use Exception;
+
 class AcrolinxEndpoint
 {
     /**  @var string $serverAddress set the Platform URL to talk to */
@@ -102,15 +104,7 @@ class AcrolinxEndpoint
 
     }
 
-
-
-    /**
-     * @param $path
-     * @param $authToken
-     * @param $data
-     * @return array
-     */
-    public function postData(string $path, $authToken, $data, SsoSignInoptions $options)
+    private function postData(string $path, $authToken, $data, SsoSignInoptions $options)
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_POST, 1);
@@ -118,32 +112,11 @@ class AcrolinxEndpoint
         if ($data) {
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
-
-        curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        $headers = $this->getCommonHeaders($authToken);
-        if (!is_null($options)) {
-            $ssoHeaders = $this->getSsoRequestHeaders($options);
-            $headers = array_merge($headers, $ssoHeaders);
-
-        }
-
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-
-        $result = curl_exec($curl);
-        if (!$result) {
-            die("Connection Failure");
-        }
-        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $output = array("response" => $result, "status" => $httpStatus);
-
-        curl_close($curl);
-        return $output;
+        return $this->curlSetup($curl, $path, $authToken, $options);
 
     }
 
-    public function getData(string $path, $data, $authToken)
+    private function getData(string $path, $data, $authToken)
     {
         $curl = curl_init();
 
@@ -152,24 +125,10 @@ class AcrolinxEndpoint
             $path = sprintf("%s?%s", $path, http_build_query($data));
         }
 
-        curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getCommonHeaders($authToken));
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-
-        $result = curl_exec($curl);
-        if (!$result) {
-            die("Connection Failure");
-        }
-        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $output = array("response" => $result, "status" => $httpStatus);
-
-        curl_close($curl);
-        return $output;
-
+        return $this->curlSetup($curl, $path, $authToken, null);
     }
 
-    public function putData(string $path, string $authToken, $data)
+    private function putData(string $path, string $authToken, $data)
     {
 
         $curl = curl_init();
@@ -179,15 +138,31 @@ class AcrolinxEndpoint
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
 
+        return $this->curlSetup($curl, $path, $authToken, null);
+
+    }
+
+    private function curlSetup($curl, string $path, $authToken, $options)
+    {
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getCommonHeaders($authToken));
+        $headers = $this->getCommonHeaders($authToken || '');
+        if (!is_null($options)) {
+            $ssoHeaders = $this->getSsoRequestHeaders($options);
+            $headers = array_merge($headers, $ssoHeaders);
+
+        }
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
         $result = curl_exec($curl);
-        if (!$result) {
-            die("Connection Failure");
+
+        if ($result === false) {
+            $error = 'Curl-Fehler: ' . curl_error($curl);
+            curl_close($curl);
+            throw new Exception($error);
         }
+
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $output = array("response" => $result, "status" => $httpStatus);
 

@@ -24,6 +24,7 @@ class AcrolinxEndPointProps
     public $clientSignature = '';
     public $clientLocale = 'en';
     public $serverAddress = '';
+    // For proxy
     public $baseUrl = '';
 
     public function __construct($clientSignature, $serverAddress, $clientLocale, $baseUrl)
