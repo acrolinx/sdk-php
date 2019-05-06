@@ -4,6 +4,7 @@ PHP SDK for working with Acrolinx (without Sidebar)
 ## Prerequisites
 
 * Have php7 installed
+* Have php-curl installed
 * Have composer installed [Find a tutorial here.](https://www.hostinger.com/tutorials/how-to-install-composer)
 
 ## Start developing
