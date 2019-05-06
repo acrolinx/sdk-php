@@ -32,11 +32,9 @@ class AcrolinxEndpointTest extends TestCase
 
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
-        $error = $responseJSON['error'];
         $data = $responseJSON['data'];
         $status = $result['status'];
 
-        $this->assertEquals(true, is_null($error));
         $this->assertEquals(true, isset($data));
         $this->assertEquals(200, $status);
     }
