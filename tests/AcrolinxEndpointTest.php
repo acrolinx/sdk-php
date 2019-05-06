@@ -27,11 +27,15 @@ class AcrolinxEndpointTest extends TestCase
 
     protected function setUp(): void
     {
-        $parent_dir = dirname(__DIR__);
-        $dotenv = Dotenv\Dotenv::create($parent_dir);
-        $dotenv->load();
         $serverEnv = getenv('ACROLINX_TEST_SERVER_URL');
         $tokenEnv = getenv('ACROLINX_ACCESS_TOKEN');
+        if ((!isset($tokenEnv) || strlen($tokenEnv) < 1) || (!isset($serverEnv) || strlen($serverEnv) < 1)) {
+            $parent_dir = dirname(__DIR__);
+            $dotenv = Dotenv\Dotenv::create($parent_dir);
+            $dotenv->overload();
+            $serverEnv = getenv('ACROLINX_TEST_SERVER_URL');
+            $tokenEnv = getenv('ACROLINX_ACCESS_TOKEN');
+        }
         if (isset($serverEnv)) {
             $this->acrolinxURL = $serverEnv;
         } else {

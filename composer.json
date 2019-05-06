@@ -20,6 +20,6 @@
     "vlucas/phpdotenv": "^3.3"
   },
   "scripts": {
-    "test": "phpunit"
+    "test": "phpunit --testdox tests --log-junit tmp/junit.xml"
   }
 }
