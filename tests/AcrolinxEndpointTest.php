@@ -17,15 +17,39 @@
 */
 
 use PHPUnit\Framework\TestCase;
+use Dotenv;
 
 class AcrolinxEndpointTest extends TestCase
 {
+
+    protected $acrolinxURL;
+    protected $acrolinxAuthToken;
+
+    protected function setUp(): void
+    {
+        $parent_dir = dirname(__DIR__);
+        $dotenv = Dotenv\Dotenv::create($parent_dir);
+        $dotenv->load();
+        $serverEnv = getenv('ACROLINX_TEST_SERVER_URL');
+        $tokenEnv = getenv('ACROLINX_ACCESS_TOKEN');
+        if (isset($serverEnv)) {
+            $this->acrolinxURL = $serverEnv;
+        } else {
+            echo 'No Acrolinx Server Address set.';
+        }
+        if (isset($tokenEnv)) {
+            $this->acrolinxAuthToken = $tokenEnv;
+        } else {
+            echo 'No Acrolinx Auth Token set.';
+        }
+    }
+
     /**
      * Test get server info API
      */
     public function testGetServerInfo()
     {
-        $props = new AcrolinxEndPointProps('dummySignature', 'https://test-next-ssl.acrolinx.com',
+        $props = new AcrolinxEndPointProps('dummySignature', $this->acrolinxURL,
             'en', '');
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
         $result = $acrolinxEndPoint->getServerInfo();

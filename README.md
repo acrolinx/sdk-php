@@ -10,4 +10,8 @@ PHP SDK for working with Acrolinx (without Sidebar)
 
 * run `composer install` to install dependencies
 * run `composer update` to update dependencies
+
+## Run tests
+* rename the **.env.conf** file to **.env**
+* set **ACROLINX_TEST_SERVER_URL** and **ACROLINX_ACCESS_TOKEN** in this file
 * run `composer test` to run unit tests
