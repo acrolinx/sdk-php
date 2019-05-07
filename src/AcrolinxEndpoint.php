@@ -16,8 +16,6 @@
 * limitations under the License.
 */
 
-use Exception;
-
 class AcrolinxEndpoint
 {
     /**  @var string $serverAddress set the Platform URL to talk to */
@@ -45,43 +43,62 @@ class AcrolinxEndpoint
 
     /**
      * Get server information
+     * @throws AcrolinxServerException
      */
     public function getServerInfo()
     {
-        return $this->getData('/api/v1/', null, null);
-
+        try {
+            return $this->getData('/api/v1/', null, null);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     /**
      * @param SsoSignInoptions $options
      * @return array
+     *
+     * @throws AcrolinxServerException
      */
     public function signIn(SsoSignInoptions $options)
     {
-        return $this->postData('/api/v1/auth/sign-ins', null, null, $options);
-
+        try {
+            return $this->postData('/api/v1/auth/sign-ins', null, null, $options);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     /**
      * @param $authToken
      * @return array
      * Get platform capabilities
+     * @throws AcrolinxServerException
      */
     public function getCapabilities(string $authToken)
     {
-        return $this->getData('/api/v1/capabilities', null, $authToken);
-    }
-
-    public function getCheckingCapabilities(string $authToken)
-    {
-        return $this->getData('/api/v1/checking/capabilities', null, $authToken);
+        try {
+            return $this->getData('/api/v1/capabilities', null, $authToken);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     /**
      * @param string $authToken
      * @return array
+     * @throws AcrolinxServerException
      */
-    public function getCommonHeaders($authToken)
+    public function getCheckingCapabilities(string $authToken)
+    {
+        try {
+            return $this->getData('/api/v1/checking/capabilities', null, $authToken);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
+    }
+
+    private function getCommonHeaders($authToken)
     {
         $headers = array(
             'X-Acrolinx-Client: ' . $this->props->clientSignature,
@@ -101,7 +118,7 @@ class AcrolinxEndpoint
 
     }
 
-    public function getSsoRequestHeaders(SsoSignInoptions $options): array
+    private function getSsoRequestHeaders(SsoSignInoptions $options): array
     {
         return array(
             $options->getUsernameKey() . ': ' . $options->getUserId(),
@@ -118,8 +135,11 @@ class AcrolinxEndpoint
         if ($data) {
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
-        return $this->curlSetup($curl, $path, $authToken, $options);
-
+        try {
+            return $this->curlSetup($curl, $path, $authToken, $options);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     private function getData(string $path, $data, $authToken)
@@ -131,7 +151,11 @@ class AcrolinxEndpoint
             $path = sprintf("%s?%s", $path, http_build_query($data));
         }
 
-        return $this->curlSetup($curl, $path, $authToken, null);
+        try {
+            return $this->curlSetup($curl, $path, $authToken, null);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     private function putData(string $path, string $authToken, $data)
@@ -144,10 +168,22 @@ class AcrolinxEndpoint
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
 
-        return $this->curlSetup($curl, $path, $authToken, null);
+        try {
+            return $this->curlSetup($curl, $path, $authToken, null);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
 
     }
 
+    /**
+     * @param $curl
+     * @param string $path
+     * @param $authToken
+     * @param $options
+     * @return array
+     * @throws AcrolinxServerException
+     */
     private function curlSetup($curl, string $path, $authToken, $options)
     {
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
@@ -166,16 +202,25 @@ class AcrolinxEndpoint
         if ($result === false) {
             $error = 'Curl-Fehler: ' . curl_error($curl);
             curl_close($curl);
-            throw new Exception($error);
+            throw new AcrolinxServerException($error);
         }
 
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
         $output = array("response" => $result, "status" => $httpStatus);
 
         curl_close($curl);
+
+        $responseJSON = json_decode($result, true);
+
+        if (array_key_exists('error', $responseJSON)) {
+            $error = $responseJSON['error'];
+
+            if (isset($error) && isset($error['title'])) {
+                throw new AcrolinxServerException(
+                    $error['title'] . ': ' . $error['detail'], 0, NULL, $error['status']);
+            }
+        }
         return $output;
-
     }
-
-
 }

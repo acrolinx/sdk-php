@@ -16,7 +16,6 @@
 * limitations under the License.
 */
 
-use Exception;
 use PHPUnit\Framework\TestCase;
 use Dotenv;
 
@@ -81,8 +80,13 @@ class AcrolinxEndpointTest extends TestCase
         $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
             'en', '');
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
-        $result = $acrolinxEndPoint->getServerInfo();
-
+        try {
+            $result = $acrolinxEndPoint->getServerInfo();
+        } catch (AcrolinxServerException $e) {
+            $message = $e->getMessage();
+            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
+                ' | StatusCode: ' . $e->getStatus() . PHP_EOL));
+        }
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
         $data = $responseJSON['data'];
@@ -100,7 +104,7 @@ class AcrolinxEndpointTest extends TestCase
         $message = '';
         try {
             $acrolinxEndPoint->getServerInfo();
-        } catch (Exception $e) {
+        } catch (AcrolinxServerException $e) {
             $message = $e->getMessage();
         }
         $this->assertContains('Could not resolve host', $message);
@@ -116,8 +120,12 @@ class AcrolinxEndpointTest extends TestCase
 
         $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
-        $result = $acrolinxEndPoint->signIn($ssoOptions);
-
+        try {
+            $result = $acrolinxEndPoint->signIn($ssoOptions);
+        } catch (AcrolinxServerException $e) {
+            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
+                ' | StatusCode: ' . $e->getStatus() . PHP_EOL));
+        }
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
         $data = $responseJSON['data']['accessToken'];
@@ -138,17 +146,16 @@ class AcrolinxEndpointTest extends TestCase
 
         $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, 'wrong password');
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
-        $result = $acrolinxEndPoint->signIn($ssoOptions);
-
-        $response = $result['response'];
-        $responseJSON = json_decode($response, true);
-        $error = $responseJSON['error'];
-        $status = $result['status'];
-
-        // fwrite(STDERR, print_r($error, TRUE));
-
+        $error = NULL;
+        try {
+            $acrolinxEndPoint->signIn($ssoOptions);
+        } catch (AcrolinxServerException $e) {
+            //   fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
+            //       ' | StatusCode: ' . $e->getStatus() . PHP_EOL));
+            $error = $e;
+        }
         $this->assertEquals(true, isset($error));
-        $this->assertEquals(401, $status);
+        $this->assertEquals(401, $error->getStatus());
     }
 
     public function testPlatformCapabilities()
@@ -168,12 +175,16 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(true, isset($accessToken));
 
         //fwrite(STDERR, print_r('accessToken: ' . $accessToken, TRUE));
-
-        $result =  $acrolinxEndPoint->getCapabilities($accessToken);
+        try {
+            $result = $acrolinxEndPoint->getCapabilities($accessToken);
+        } catch (AcrolinxServerException $e) {
+            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
+                ' | StatusCode: ' . $e->getStatus() . PHP_EOL));
+        }
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
-        $checking= $responseJSON['data']['checking'];
-        $document= $responseJSON['data']['document'];
+        $checking = $responseJSON['data']['checking'];
+        $document = $responseJSON['data']['document'];
         $status = $result['status'];
         //fwrite(STDERR, print_r($data, TRUE));
 
@@ -199,11 +210,15 @@ class AcrolinxEndpointTest extends TestCase
         $accessToken = $responseJSON['data']['accessToken'];
         $this->assertEquals(true, isset($accessToken));
         //fwrite(STDERR, print_r('accessToken: ' . $accessToken, TRUE));
-
-        $result =  $acrolinxEndPoint->getCheckingCapabilities($accessToken);
+        try {
+            $result = $acrolinxEndPoint->getCheckingCapabilities($accessToken);
+        } catch (AcrolinxServerException $e) {
+            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
+                ' | StatusCode: ' . $e->getStatus() . PHP_EOL));
+        }
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
-        $guidanceProfiles= $responseJSON['data']['guidanceProfiles'];
+        $guidanceProfiles = $responseJSON['data']['guidanceProfiles'];
         $status = $result['status'];
         //fwrite(STDERR, print_r($data, TRUE));
 
