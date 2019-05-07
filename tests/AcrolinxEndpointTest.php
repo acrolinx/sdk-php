@@ -165,6 +165,8 @@ class AcrolinxEndpointTest extends TestCase
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
         $accessToken = $responseJSON['data']['accessToken'];
+        $this->assertEquals(true, isset($accessToken));
+
         //fwrite(STDERR, print_r('accessToken: ' . $accessToken, TRUE));
 
         $result =  $acrolinxEndPoint->getCapabilities($accessToken);
@@ -195,6 +197,7 @@ class AcrolinxEndpointTest extends TestCase
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
         $accessToken = $responseJSON['data']['accessToken'];
+        $this->assertEquals(true, isset($accessToken));
         //fwrite(STDERR, print_r('accessToken: ' . $accessToken, TRUE));
 
         $result =  $acrolinxEndPoint->getCheckingCapabilities($accessToken);
