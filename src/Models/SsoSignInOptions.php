@@ -17,7 +17,7 @@
 */
 
 
-namespace Acrolinx\SDK;
+namespace Acrolinx\SDK\Models;
 
 
 class SsoSignInOptions

@@ -18,6 +18,9 @@
 
 use PHPUnit\Framework\TestCase;
 use Dotenv;
+use Acrolinx\SDK\Exceptions\AcrolinxServerException;
+use Acrolinx\SDK\Models\AcrolinxEndPointProps;
+use Acrolinx\SDK\Models\SsoSignInOptions;
 
 class AcrolinxEndpointTest extends TestCase
 {

@@ -16,6 +16,10 @@
 * limitations under the License.
 */
 
+use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Models\AcrolinxEndPointProps;
+use Acrolinx\SDK\Exceptions\AcrolinxServerException;
+
 class AcrolinxEndpoint
 {
     /**  @var string $serverAddress set the Platform URL to talk to */

@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 
-namespace Acrolinx\SDK;
+namespace Acrolinx\SDK\Models;
 
 
 class AcrolinxEndPointProps
