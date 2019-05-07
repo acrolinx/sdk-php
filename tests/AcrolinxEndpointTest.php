@@ -151,4 +151,62 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(401, $status);
     }
 
+    public function testPlatformCapabilities()
+    {
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+            'en', '');
+
+        // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
+        // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
+
+        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $result = $acrolinxEndPoint->signIn($ssoOptions);
+        $response = $result['response'];
+        $responseJSON = json_decode($response, true);
+        $accessToken = $responseJSON['data']['accessToken'];
+        //fwrite(STDERR, print_r('accessToken: ' . $accessToken, TRUE));
+
+        $result =  $acrolinxEndPoint->getCapabilities($accessToken);
+        $response = $result['response'];
+        $responseJSON = json_decode($response, true);
+        $checking= $responseJSON['data']['checking'];
+        $document= $responseJSON['data']['document'];
+        $status = $result['status'];
+        //fwrite(STDERR, print_r($data, TRUE));
+
+        $this->assertEquals(true, isset($checking));
+        $this->assertEquals(true, isset($document));
+        $this->assertEquals(200, $status);
+
+    }
+
+    public function testPlatformCheckingCapabilities()
+    {
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+            'en', '');
+
+        // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
+        // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
+
+        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $result = $acrolinxEndPoint->signIn($ssoOptions);
+        $response = $result['response'];
+        $responseJSON = json_decode($response, true);
+        $accessToken = $responseJSON['data']['accessToken'];
+        //fwrite(STDERR, print_r('accessToken: ' . $accessToken, TRUE));
+
+        $result =  $acrolinxEndPoint->getCheckingCapabilities($accessToken);
+        $response = $result['response'];
+        $responseJSON = json_decode($response, true);
+        $guidanceProfiles= $responseJSON['data']['guidanceProfiles'];
+        $status = $result['status'];
+        //fwrite(STDERR, print_r($data, TRUE));
+
+        $this->assertEquals(true, isset($guidanceProfiles));
+        $this->assertEquals(200, $status);
+
+    }
+
 }

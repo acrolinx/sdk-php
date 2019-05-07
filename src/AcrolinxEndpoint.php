@@ -64,10 +64,17 @@ class AcrolinxEndpoint
 
     /**
      * @param $authToken
+     * @return array
+     * Get platform capabilities
      */
-    public function getCapabilities($authToken)
+    public function getCapabilities(string $authToken)
     {
+        return $this->getData('/api/v1/capabilities', null, $authToken);
+    }
 
+    public function getCheckingCapabilities(string $authToken)
+    {
+        return $this->getData('/api/v1/checking/capabilities', null, $authToken);
     }
 
     /**
@@ -144,7 +151,7 @@ class AcrolinxEndpoint
     private function curlSetup($curl, string $path, $authToken, $options)
     {
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        $headers = $this->getCommonHeaders($authToken || '');
+        $headers = $this->getCommonHeaders($authToken);
         if (!is_null($options)) {
             $ssoHeaders = $this->getSsoRequestHeaders($options);
             $headers = array_merge($headers, $ssoHeaders);
