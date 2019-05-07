@@ -55,15 +55,35 @@ class AcrolinxEndpoint
     }
 
     /**
-     * @param SsoSignInoptions $options
+     * @param SsoSignInOptions $options
      * @return array
      *
      * @throws AcrolinxServerException
      */
-    public function signIn(SsoSignInoptions $options)
+    public function signIn(SsoSignInOptions $options)
     {
         try {
             return $this->postData('/api/v1/auth/sign-ins', null, null, $options);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Get an authentication token for single sign on username and password.
+     * @param string $username
+     * @param string $password
+     * @return string AuthToken
+     * @throws AcrolinxServerException
+     */
+    public function getAuthTokenFromSSOCredentials(string $username, string $password): string
+    {
+        $ssoOptions = new SsoSignInOptions($username, $password);
+        try {
+            $result = $this->signIn($ssoOptions);
+            $response = $result['response'];
+            $responseJSON = json_decode($response, true);
+            return $responseJSON['data']['accessToken'];
         } catch (AcrolinxServerException $e) {
             throw $e;
         }
@@ -118,7 +138,7 @@ class AcrolinxEndpoint
 
     }
 
-    private function getSsoRequestHeaders(SsoSignInoptions $options): array
+    private function getSsoRequestHeaders(SsoSignInOptions $options): array
     {
         return array(
             $options->getUsernameKey() . ': ' . $options->getUserId(),
@@ -127,7 +147,7 @@ class AcrolinxEndpoint
 
     }
 
-    private function postData(string $path, $authToken, $data, SsoSignInoptions $options)
+    private function postData(string $path, $authToken, $data, SsoSignInOptions $options)
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_POST, 1);

@@ -20,7 +20,7 @@
 namespace Acrolinx\SDK;
 
 
-class SsoSignInoptions
+class SsoSignInOptions
 {
     private $usernameKey;
     private $passwordKey;

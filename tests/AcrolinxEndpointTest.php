@@ -31,6 +31,13 @@ class AcrolinxEndpointTest extends TestCase
     // See: https://support.acrolinx.com/hc/en-us/articles/205687652-Getting-Started-with-Custom-Integrations
     protected $DEVELOPMENT_SIGNATURE = 'SW50ZWdyYXRpb25EZXZlbG9wbWVudERlbW9Pbmx5';
 
+    private function getProps()
+    {
+        return new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+            'en', '');
+    }
+
+
     protected function setUp(): void
     {
         $serverEnv = getenv('ACROLINX_TEST_SERVER_URL');
@@ -77,13 +84,10 @@ class AcrolinxEndpointTest extends TestCase
      */
     public function testGetServerInfo()
     {
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
         try {
             $result = $acrolinxEndPoint->getServerInfo();
         } catch (AcrolinxServerException $e) {
-            $message = $e->getMessage();
             fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
                 ' | StatusCode: ' . $e->getStatus() . PHP_EOL));
         }
@@ -112,14 +116,11 @@ class AcrolinxEndpointTest extends TestCase
 
     public function testSignIn()
     {
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
-
         // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
         // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
 
-        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
         try {
             $result = $acrolinxEndPoint->signIn($ssoOptions);
         } catch (AcrolinxServerException $e) {
@@ -138,14 +139,11 @@ class AcrolinxEndpointTest extends TestCase
 
     public function testSignInError()
     {
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
-
         // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
         // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
 
-        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, 'wrong password');
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, 'wrong password');
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
         $error = NULL;
         try {
             $acrolinxEndPoint->signIn($ssoOptions);
@@ -160,14 +158,11 @@ class AcrolinxEndpointTest extends TestCase
 
     public function testPlatformCapabilities()
     {
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
-
         // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
         // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
 
-        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
         $result = $acrolinxEndPoint->signIn($ssoOptions);
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
@@ -196,14 +191,11 @@ class AcrolinxEndpointTest extends TestCase
 
     public function testPlatformCheckingCapabilities()
     {
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
-
         // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
         // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
 
-        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
         $result = $acrolinxEndPoint->signIn($ssoOptions);
         $response = $result['response'];
         $responseJSON = json_decode($response, true);
@@ -224,7 +216,29 @@ class AcrolinxEndpointTest extends TestCase
 
         $this->assertEquals(true, isset($guidanceProfiles));
         $this->assertEquals(200, $status);
+    }
 
+    public function testGetAuthTokenFromSSOCredentials()
+    {
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
+        $result = $acrolinxEndPoint->getAuthTokenFromSSOCredentials($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $this->assertTrue(isset($result));
+        $this->assertTrue(strlen($result) > 10);
+    }
+
+    public function testGetAuthTokenFromSSOCredentialsErrorCase()
+    {
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
+        $error = NULL;
+        try {
+            $acrolinxEndPoint->getAuthTokenFromSSOCredentials($this->acrolinxSsoUser, 'wrongPassword');
+
+        } catch (AcrolinxServerException $e) {
+            $error = $e;
+        }
+        $this->assertTrue(isset($error));
+        $message = $error->getMessage();
+        $this->assertTrue(isset($message));
     }
 
 }
