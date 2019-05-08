@@ -101,12 +101,13 @@ class AcrolinxEndpoint
         ];
 
         if (!is_null($this->props->clientLocale)) {
-            array_push($headers, ['X-Acrolinx-Client-Locale' => $this->props->clientLocale]);
+            $headers['X-Acrolinx-Client-Locale'] = $this->props->clientLocale;
         }
 
         if (!is_null($authToken)) {
-            array_push($headers, ['X-Acrolinx-Auth' => $authToken]);
+            $headers['X-Acrolinx-Auth'] = $authToken;
         }
+
 
         return $headers;
     }
