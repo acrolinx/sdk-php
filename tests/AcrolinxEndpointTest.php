@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 
+use GuzzleHttp\Exception\RequestException;
 use PHPUnit\Framework\TestCase;
 use Dotenv;
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
@@ -107,20 +108,19 @@ class AcrolinxEndpointTest extends TestCase
     }
 
 
-// TODO this throws a curl error which can't be catched... How do we prevent something like that from happening?
-    /*public function testGetServerInfoError()
+    public function testGetServerInfoError()
     {
         $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, 'SomeFakeURL',
             'en', '');
         $acrolinxEndPoint = new AcrolinxEndpoint($props);
-        $message = '';
         try {
             $acrolinxEndPoint->getServerInfo()->wait();
-        } catch (Exception $e) {
+        } catch (RequestException $e) {
             $message = $e->getMessage();
+            $this->assertContains('cURL error 3: <url> malformed', $message);
         }
-        $this->assertContains('Could not resolve host', $message);
-    }*/
+
+    }
 
     /*public function testSignIn()
     {
