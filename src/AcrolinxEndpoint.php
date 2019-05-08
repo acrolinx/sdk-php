@@ -77,6 +77,11 @@ class AcrolinxEndpoint
         return $this->getData('/api/v1/checking/capabilities', null, $authToken);
     }
 
+    public function check(string $authToken, CheckRequest $request)
+    {
+        return $this->postData('/api/v1/checking/checks', $authToken, $request->getJson());
+    }
+
     /**
      * @param string $authToken
      * @return array
@@ -110,14 +115,16 @@ class AcrolinxEndpoint
 
     }
 
-    private function postData(string $path, $authToken, $data, SsoSignInoptions $options)
+    private function postData(string $path, $authToken, $data, SsoSignInoptions $options = null)
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_POST, 1);
 
         if ($data) {
+
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
+        fwrite(STDERR, print_r($data, TRUE));
         return $this->curlSetup($curl, $path, $authToken, $options);
 
     }

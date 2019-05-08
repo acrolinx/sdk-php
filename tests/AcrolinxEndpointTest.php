@@ -212,4 +212,66 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
+    public function testCheckOptionsClass()
+    {
+        $checkOptions = new CheckOptions();
+
+        $checkOptions->batchId = 1;
+        $checkOptions->checkType = CheckType::baseline;
+        $checkOptions->contentFormat = 'XML';
+        $checkOptions->disableCustomFieldValidation = false;
+        $checkOptions->reportTypes = array(ReportType::termHarvesting, ReportType::scorecard);
+        $checkOptions->guidanceProfileId = '2';
+        $checkOptions->languageId = 'en';
+        $checkOptions->partialCheckRanges = new CheckRange(10, 20);
+
+        $checkOptionsJson = $checkOptions->getJson();
+        $this->assertEquals(false, empty((array)$checkOptionsJson));
+
+    }
+
+    public function testBasicCheckSubmition()
+    {
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+            'en', '');
+
+        // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
+        // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
+
+        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $result = $acrolinxEndPoint->signIn($ssoOptions);
+        $accessToken = json_decode($result['response'], true)['data']['accessToken'];
+        $this->assertEquals(true, isset($accessToken));
+
+        $checkingCapabilities = $acrolinxEndPoint->getCheckingCapabilities($accessToken);
+        $guidanceProfileId = json_decode($checkingCapabilities['response'], true)['data']['guidanceProfiles'][0]['id'];
+        $this->assertEquals(true, isset($guidanceProfileId));
+
+
+        $checkOptions = new CheckOptions();
+        $checkOptions->batchId = 1;
+        $checkOptions->checkType = CheckType::baseline;
+        $checkOptions->contentFormat = 'TEXT';
+        $checkOptions->disableCustomFieldValidation = false;
+        $checkOptions->reportTypes = array(ReportType::termHarvesting, ReportType::scorecard);
+        $checkOptions->guidanceProfileId = $guidanceProfileId;
+        $checkOptions->languageId = 'en';
+        $checkOptions->partialCheckRanges = array(new CheckRange(10, 20));
+
+
+        $checkRequest = new CheckRequest('Simple Test');
+        $checkRequest->checkOptions = $checkOptions;
+        $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
+        $checkRequest->contentEncoding = ContentEncoding::none;
+
+
+        //fwrite(STDERR, print_r($checkRequest->getJson(), TRUE));
+
+        $result = $acrolinxEndPoint->check($accessToken, $checkRequest);
+        fwrite(STDERR, print_r($result, TRUE));
+
+
+    }
+
 }
