@@ -16,7 +16,9 @@
 * limitations under the License.
 */
 
-use Exception;
+use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Models\AcrolinxEndPointProps;
+use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 
 class AcrolinxEndpoint
 {
@@ -45,36 +47,65 @@ class AcrolinxEndpoint
 
     /**
      * Get server information
+     * @throws AcrolinxServerException
      */
     public function getServerInfo()
     {
-        return $this->getData('/api/v1/', null, null);
-
+        try {
+            return $this->getData('/api/v1/', null, null);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     /**
-     * @param SsoSignInoptions $options
+     * @param SsoSignInOptions $options
      * @return array
+     *
+     * @throws AcrolinxServerException
      */
-    public function signIn(SsoSignInoptions $options)
+    public function signIn(SsoSignInOptions $options)
     {
-        return $this->postData('/api/v1/auth/sign-ins', null, null, $options);
+        try {
+            return $this->postData('/api/v1/auth/sign-ins', null, null, $options);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
+    }
 
+    /**
+     * Get an authentication token for single sign on username and password.
+     * @param string $username
+     * @param string $password
+     * @return string AuthToken
+     * @throws AcrolinxServerException
+     */
+    public function getAuthTokenFromSSOCredentials(string $username, string $password): string
+    {
+        $ssoOptions = new SsoSignInOptions($username, $password);
+        try {
+            $result = $this->signIn($ssoOptions);
+            $response = $result['response'];
+            $responseJSON = json_decode($response, true);
+            return $responseJSON['data']['accessToken'];
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     /**
      * @param $authToken
      * @return array
      * Get platform capabilities
+     * @throws AcrolinxServerException
      */
     public function getCapabilities(string $authToken)
     {
-        return $this->getData('/api/v1/capabilities', null, $authToken);
-    }
-
-    public function getCheckingCapabilities(string $authToken)
-    {
-        return $this->getData('/api/v1/checking/capabilities', null, $authToken);
+        try {
+            return $this->getData('/api/v1/capabilities', null, $authToken);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     public function check(string $authToken, CheckRequest $request)
@@ -85,8 +116,18 @@ class AcrolinxEndpoint
     /**
      * @param string $authToken
      * @return array
+     * @throws AcrolinxServerException
      */
-    public function getCommonHeaders($authToken)
+    public function getCheckingCapabilities(string $authToken)
+    {
+        try {
+            return $this->getData('/api/v1/checking/capabilities', null, $authToken);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
+    }
+
+    private function getCommonHeaders($authToken)
     {
         $headers = array(
             'X-Acrolinx-Client: ' . $this->props->clientSignature,
@@ -106,7 +147,7 @@ class AcrolinxEndpoint
 
     }
 
-    public function getSsoRequestHeaders(SsoSignInoptions $options): array
+    private function getSsoRequestHeaders(SsoSignInOptions $options): array
     {
         return array(
             $options->getUsernameKey() . ': ' . $options->getUserId(),
@@ -115,7 +156,9 @@ class AcrolinxEndpoint
 
     }
 
+
     private function postData(string $path, $authToken, $data, SsoSignInoptions $options = null)
+
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_POST, 1);
@@ -124,8 +167,14 @@ class AcrolinxEndpoint
 
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
-        fwrite(STDERR, print_r($data, TRUE));
-        return $this->curlSetup($curl, $path, $authToken, $options);
+
+
+
+        try {
+            return $this->curlSetup($curl, $path, $authToken, $options);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
 
     }
 
@@ -138,7 +187,11 @@ class AcrolinxEndpoint
             $path = sprintf("%s?%s", $path, http_build_query($data));
         }
 
-        return $this->curlSetup($curl, $path, $authToken, null);
+        try {
+            return $this->curlSetup($curl, $path, $authToken, null);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
     }
 
     private function putData(string $path, string $authToken, $data)
@@ -151,10 +204,22 @@ class AcrolinxEndpoint
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
 
-        return $this->curlSetup($curl, $path, $authToken, null);
+        try {
+            return $this->curlSetup($curl, $path, $authToken, null);
+        } catch (AcrolinxServerException $e) {
+            throw $e;
+        }
 
     }
 
+    /**
+     * @param $curl
+     * @param string $path
+     * @param $authToken
+     * @param $options
+     * @return array
+     * @throws AcrolinxServerException
+     */
     private function curlSetup($curl, string $path, $authToken, $options)
     {
         curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
@@ -173,16 +238,25 @@ class AcrolinxEndpoint
         if ($result === false) {
             $error = 'Curl-Fehler: ' . curl_error($curl);
             curl_close($curl);
-            throw new Exception($error);
+            throw new AcrolinxServerException($error);
         }
 
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
         $output = array("response" => $result, "status" => $httpStatus);
 
         curl_close($curl);
+
+        $responseJSON = json_decode($result, true);
+
+        if (array_key_exists('error', $responseJSON)) {
+            $error = $responseJSON['error'];
+
+            if (isset($error) && isset($error['title'])) {
+                throw new AcrolinxServerException(
+                    $error['title'] . ': ' . $error['detail'], 0, NULL, $error['status']);
+            }
+        }
         return $output;
-
     }
-
-
 }

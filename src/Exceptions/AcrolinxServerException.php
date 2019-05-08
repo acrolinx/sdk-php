@@ -16,23 +16,23 @@
 * limitations under the License.
 */
 
-namespace Acrolinx\SDK;
+namespace Acrolinx\SDK\Exceptions;
 
+use Exception;
 
-class AcrolinxEndPointProps
+class AcrolinxServerException extends Exception
 {
-    public $clientSignature = '';
-    public $clientLocale = 'en';
-    public $serverAddress = '';
-    // For proxy
-    public $baseUrl = '';
 
-    public function __construct($clientSignature, $serverAddress, $clientLocale, $baseUrl)
+    protected $_status;
+
+    public function __construct($message = "", $code = 0, Exception $previous = NULL, $status = NULL)
     {
-        $this->clientLocale = $clientLocale;
-        $this->serverAddress = $serverAddress;
-        $this->baseUrl = $baseUrl;
-        $this->clientSignature = $clientSignature;
+        $this->_status = $status;
+        parent::__construct($message, $code, $previous);
     }
 
+    public function getStatus()
+    {
+        return $this->_status;
+    }
 }
