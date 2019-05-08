@@ -73,7 +73,7 @@ class AcrolinxEndpoint
 
     public function getCapabilities(string $authToken): PromiseInterface
     {
-        $request = new Request('POST', '/api/v1/capabilities',
+        $request = new Request('GET', '/api/v1/capabilities',
             $this->getCommonHeaders($authToken), null);
         return $this->client->sendAsync($request);
     }

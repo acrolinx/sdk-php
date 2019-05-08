@@ -17,6 +17,7 @@
 */
 
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Dotenv;
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
@@ -30,6 +31,7 @@ use Acrolinx\SDK\Models\CheckRequest;
 use Acrolinx\SDK\Models\DocumentDescriptorRequest;
 use Acrolinx\SDK\Models\ContentEncoding;
 use PHPUnit\Runner\Exception;
+use Psr\Http\Message\ResponseInterface;
 
 
 class AcrolinxEndpointTest extends TestCase
@@ -122,30 +124,23 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
-    /*public function testSignIn()
+    public function testSignIn()
     {
-        // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
-        // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
-
         $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
         try {
-            $result = $acrolinxEndPoint->signIn($ssoOptions);
-        } catch (AcrolinxServerException $e) {
-            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-                ' | StatusCode: ' . $e->getStatus() . PHP_EOL));
-        }
-        $response = $result['response'];
-        $responseJSON = json_decode($response, true);
-        $data = $responseJSON['data']['accessToken'];
-        $status = $result['status'];
-        // fwrite(STDERR, print_r($data, TRUE));
+            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+            $responseBody = json_decode($response->getBody());
+            $this->assertEquals(true, isset($responseBody->data->accessToken));
 
-        $this->assertEquals(true, isset($data));
-        $this->assertEquals(200, $status);
+        } catch (RequestException $e) {
+            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
+                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
+        }
+
     }
 
-    public function testSignInError()
+    /*public function testSignInError()
     {
         // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
         // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
