@@ -262,7 +262,7 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
-    public function testBasicCheckSubmission()
+    public function testSubmitCheckWithCheckOptions()
     {
         $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
             'en', '');
@@ -289,13 +289,37 @@ class AcrolinxEndpointTest extends TestCase
         $checkOptions->reportTypes = array(ReportType::termHarvesting, ReportType::scorecard);
         $checkOptions->guidanceProfileId = $guidanceProfileId;
         $checkOptions->languageId = 'en';
-        $checkOptions->partialCheckRanges = array(new CheckRange(10, 20));
+        //$checkOptions->partialCheckRanges = array(new CheckRange(10, 20));
 
 
         $checkRequest = new CheckRequest('Simple Test');
         $checkRequest->checkOptions = $checkOptions;
         $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
         $checkRequest->contentEncoding = ContentEncoding::none;
+
+        $result = $acrolinxEndPoint->check($accessToken, $checkRequest);
+        $checkId = json_decode($result['response'], true)['data']['id'];
+
+        $this->assertEquals(false, empty($checkId));
+
+    }
+
+    public function testSubmitCheckWithoutOptions()
+    {
+
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+            'en', '');
+
+        // fwrite(STDERR, print_r('user' . $this->acrolinxSsoUser, TRUE));
+        // fwrite(STDERR, print_r('password' . $this->acrolinxPassword, TRUE));
+
+        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $result = $acrolinxEndPoint->signIn($ssoOptions);
+        $accessToken = json_decode($result['response'], true)['data']['accessToken'];
+        $this->assertEquals(true, isset($accessToken));
+
+        $checkRequest = new CheckRequest('Simple Test');
 
         $result = $acrolinxEndPoint->check($accessToken, $checkRequest);
         $checkId = json_decode($result['response'], true)['data']['id'];
