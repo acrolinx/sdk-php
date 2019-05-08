@@ -19,7 +19,9 @@
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Acrolinx\SDK\Models\AcrolinxEndPointProps;
 use Acrolinx\SDK\Models\CheckRequest;
-use Acrolinx\SDK\Exceptions\AcrolinxServerException;
+use GuzzleHttp\Client;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Request;
 
 class AcrolinxEndpoint
 {
@@ -27,6 +29,7 @@ class AcrolinxEndpoint
     private $serverAddress = '';
     private $clientLocale = 'en';
     private $props = null;
+    private $client;
 
     /**
      * AcrolinxEndpoint constructor.
@@ -35,6 +38,7 @@ class AcrolinxEndpoint
     public function __construct(AcrolinxEndPointProps $props)
     {
         $this->props = $props;
+        $this->client = new Client(['base_uri' => $props->serverAddress]);
     }
 
     /**
@@ -48,216 +52,70 @@ class AcrolinxEndpoint
 
     /**
      * Get server information
-     * @throws AcrolinxServerException
-     */
-    public function getServerInfo()
-    {
-        try {
-            return $this->getData('/api/v1/', null, null);
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * @param SsoSignInOptions $options
-     * @return array
      *
-     * @throws AcrolinxServerException
      */
-    public function signIn(SsoSignInOptions $options)
+    public function getServerInfo(): PromiseInterface
     {
-        try {
-            return $this->postData('/api/v1/auth/sign-ins', null, null, $options);
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
+        $request = new Request('GET', '/api/v1/',
+            $this->getCommonHeaders(null), null);
+        return $this->client->sendAsync($request);
     }
 
-    /**
-     * Get an authentication token for single sign on username and password.
-     * @param string $username
-     * @param string $password
-     * @return string AuthToken
-     * @throws AcrolinxServerException
-     */
-    public function getAuthTokenFromSSOCredentials(string $username, string $password): string
+
+    public function signIn(SsoSignInOptions $options): PromiseInterface
     {
-        $ssoOptions = new SsoSignInOptions($username, $password);
-        try {
-            $result = $this->signIn($ssoOptions);
-            $response = $result['response'];
-            $responseJSON = json_decode($response, true);
-            return $responseJSON['data']['accessToken'];
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
+        $headers = array_merge($this->getSsoRequestHeaders($options), $this->getCommonHeaders(null));
+        $request = new Request('POST', '/api/v1/auth/sign-ins',
+            $headers, null);
+        return $this->client->sendAsync($request);
     }
 
-    /**
-     * @param $authToken
-     * @return array
-     * Get platform capabilities
-     * @throws AcrolinxServerException
-     */
-    public function getCapabilities(string $authToken)
+
+    public function getCapabilities(string $authToken): PromiseInterface
     {
-        try {
-            return $this->getData('/api/v1/capabilities', null, $authToken);
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
+        $request = new Request('POST', '/api/v1/capabilities',
+            $this->getCommonHeaders($authToken), null);
+        return $this->client->sendAsync($request);
     }
 
-    public function check(string $authToken, CheckRequest $request)
+    public function check(string $authToken, CheckRequest $request): PromiseInterface
     {
-        return $this->postData('/api/v1/checking/checks', $authToken, $request->getJson());
+        $request = new Request('POST', '/api/v1/checking/checks',
+            $this->getCommonHeaders($authToken), $request->getJson());
+        return $this->client->sendAsync($request);
     }
 
-    /**
-     * @param string $authToken
-     * @return array
-     * @throws AcrolinxServerException
-     */
-    public function getCheckingCapabilities(string $authToken)
+    public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
-        try {
-            return $this->getData('/api/v1/checking/capabilities', null, $authToken);
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
+        $request = new Request('GET', '/api/v1/checking/capabilities',
+            $this->getCommonHeaders($authToken), null);
+        return $this->client->sendAsync($request);
     }
 
     private function getCommonHeaders($authToken)
     {
-        $headers = array(
-            'X-Acrolinx-Client: ' . $this->props->clientSignature,
-            'X-Acrolinx-Base-Url:' . $this->props->baseUrl,
-            'Content-Type: application/json'
-        );
+        $headers = [
+            'X-Acrolinx-Client' => $this->props->clientSignature,
+            'X-Acrolinx-Base-Url' => $this->props->baseUrl,
+            'Content-Type' => 'application/json'
+        ];
 
         if (!is_null($this->props->clientLocale)) {
-            array_push($headers, 'X-Acrolinx-Client-Locale: ' . $this->props->clientLocale);
+            array_push($headers, ['X-Acrolinx-Client-Locale' => $this->props->clientLocale]);
         }
 
         if (!is_null($authToken)) {
-            array_push($headers, 'X-Acrolinx-Auth: ' . $authToken);
+            array_push($headers, ['X-Acrolinx-Auth' => $authToken]);
         }
 
         return $headers;
-
     }
 
     private function getSsoRequestHeaders(SsoSignInOptions $options): array
     {
-        return array(
-            $options->getUsernameKey() . ': ' . $options->getUserId(),
-            $options->getPasswordKey() . ': ' . $options->getPassword()
-        );
-
-    }
-
-
-    private function postData(string $path, $authToken, $data, SsoSignInoptions $options = null)
-
-    {
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_POST, 1);
-
-        if ($data) {
-
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        }
-
-
-
-        try {
-            return $this->curlSetup($curl, $path, $authToken, $options);
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
-
-    }
-
-    private function getData(string $path, $data, $authToken)
-    {
-        $curl = curl_init();
-
-
-        if ($data) {
-            $path = sprintf("%s?%s", $path, http_build_query($data));
-        }
-
-        try {
-            return $this->curlSetup($curl, $path, $authToken, null);
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
-    }
-
-    private function putData(string $path, string $authToken, $data)
-    {
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
-
-        if ($data) {
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        }
-
-        try {
-            return $this->curlSetup($curl, $path, $authToken, null);
-        } catch (AcrolinxServerException $e) {
-            throw $e;
-        }
-
-    }
-
-    /**
-     * @param $curl
-     * @param string $path
-     * @param $authToken
-     * @param $options
-     * @return array
-     * @throws AcrolinxServerException
-     */
-    private function curlSetup($curl, string $path, $authToken, $options)
-    {
-        curl_setopt($curl, CURLOPT_URL, $this->props->serverAddress . $path);
-        $headers = $this->getCommonHeaders($authToken);
-        if (!is_null($options)) {
-            $ssoHeaders = $this->getSsoRequestHeaders($options);
-            $headers = array_merge($headers, $ssoHeaders);
-
-        }
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-
-        $result = curl_exec($curl);
-
-        if ($result === false) {
-            $error = 'Curl-Fehler: ' . curl_error($curl);
-            curl_close($curl);
-            throw new AcrolinxServerException($error);
-        }
-
-        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        $output = array("response" => $result, "status" => $httpStatus);
-
-        curl_close($curl);
-
-        $responseJSON = json_decode($result, true);
-
-        if (array_key_exists('error', $responseJSON)) {
-            $error = $responseJSON['error'];
-
-            if (isset($error) && isset($error['title'])) {
-                throw new AcrolinxServerException(
-                    $error['title'] . ': ' . $error['detail'], 0, NULL, $error['status']);
-            }
-        }
-        return $output;
+        return [
+            $options->getUsernameKey() => $options->getUserId(),
+            $options->getPasswordKey() => $options->getPassword()
+        ];
     }
 }
