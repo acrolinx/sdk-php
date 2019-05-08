@@ -16,30 +16,11 @@
 * limitations under the License.
 */
 
-
 namespace Acrolinx\SDK\Models;
 
-use Acrolinx\SDK\Utils\SDKUtils;
-
-class CheckOptions
+abstract class GuidanceProfileStatus
 {
-    public $guidanceProfileId;
-    public $reportTypes;
-    public $checkType;
-    public $addons;
-    public $partialCheckRanges;
-    public $contentFormat;
-    public $languageId;
-    public $batchId;
-    public $disableCustomFieldValidation;
-
-
-    public function getJson()
-    {
-        return json_encode(SDKUtils::objectToArray($this));
-    }
-
-
+    const ready = 'ready';
+    const loading = 'loading';
+    const unavailable = 'unavailable';
 }
-
-

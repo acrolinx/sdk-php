@@ -21,6 +21,14 @@ use Dotenv;
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProps;
 use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Models\CheckOptions;
+use Acrolinx\SDK\Models\CheckType;
+use Acrolinx\SDK\Models\ReportType;
+use Acrolinx\SDK\Models\CheckRange;
+use Acrolinx\SDK\Models\CheckRequest;
+use Acrolinx\SDK\Models\DocumentDescriptorRequest;
+use Acrolinx\SDK\Models\ContentEncoding;
+
 
 class AcrolinxEndpointTest extends TestCase
 {
@@ -225,7 +233,7 @@ class AcrolinxEndpointTest extends TestCase
     {
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
         $result = $acrolinxEndPoint->getAuthTokenFromSSOCredentials($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $this->assertTrue(isset($result));
+        $this->assertTrue(is_string($result));
         $this->assertTrue(strlen($result) > 10);
     }
 

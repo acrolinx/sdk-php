@@ -16,30 +16,12 @@
 * limitations under the License.
 */
 
-
 namespace Acrolinx\SDK\Models;
 
-use Acrolinx\SDK\Utils\SDKUtils;
-
-class CheckOptions
+abstract class ReportType
 {
-    public $guidanceProfileId;
-    public $reportTypes;
-    public $checkType;
-    public $addons;
-    public $partialCheckRanges;
-    public $contentFormat;
-    public $languageId;
-    public $batchId;
-    public $disableCustomFieldValidation;
-
-
-    public function getJson()
-    {
-        return json_encode(SDKUtils::objectToArray($this));
-    }
-
-
+    const termHarvesting = 'termHarvesting';
+    const scorecard = 'scorecard';
+    const extractedText = 'extractedText';
+    const request_text = 'extractedText';
 }
-
-

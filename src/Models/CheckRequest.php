@@ -16,30 +16,28 @@
 * limitations under the License.
 */
 
-
 namespace Acrolinx\SDK\Models;
+
+// ToDo: I have currently kept access specifiers for data members as public for converting objects to JSON.
+// ToDo: We need to write a recursive function to convert objects to JSON which converts private members.
 
 use Acrolinx\SDK\Utils\SDKUtils;
 
-class CheckOptions
+class CheckRequest
 {
-    public $guidanceProfileId;
-    public $reportTypes;
-    public $checkType;
-    public $addons;
-    public $partialCheckRanges;
-    public $contentFormat;
-    public $languageId;
-    public $batchId;
-    public $disableCustomFieldValidation;
+    public $content;
+    public $contentEncoding;
+    public $checkOptions;
+    public $document;
 
+    public function __construct($content)
+    {
+        $this->content = $content;
+    }
 
     public function getJson()
     {
         return json_encode(SDKUtils::objectToArray($this));
     }
 
-
 }
-
-

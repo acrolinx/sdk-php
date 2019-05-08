@@ -18,6 +18,7 @@
 
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Acrolinx\SDK\Models\AcrolinxEndPointProps;
+use Acrolinx\SDK\Models\CheckRequest;
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 
 class AcrolinxEndpoint
