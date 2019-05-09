@@ -92,6 +92,14 @@ class AcrolinxEndpoint
         return $this->client->sendAsync($request);
     }
 
+    public function pollforCheckResult(string $url, string $authToken): PromiseInterface
+    {
+        $request = new Request('GET', $url,
+            $this->getCommonHeaders($authToken), null);
+        $httpClient =  new Client();
+        return $httpClient->sendAsync($request);
+    }
+
     private function getCommonHeaders($authToken)
     {
         $headers = [

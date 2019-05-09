@@ -25,6 +25,7 @@ use Acrolinx\SDK\Models\ContentEncoding;
 use Acrolinx\SDK\Models\DocumentDescriptorRequest;
 use Acrolinx\SDK\Models\ReportType;
 use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Utils\Polling;
 use Dotenv;
 use GuzzleHttp\Exception\RequestException;
 use PHPUnit\Framework\TestCase;
@@ -283,6 +284,56 @@ class AcrolinxEndpointTest extends TestCase
             $response = $acrolinxEndPoint->check($accessToken, $checkRequest)->wait(true);
             $responseBody = json_decode($response->getBody());
             $this->assertEquals(false, empty($responseBody->data->id));
+        } catch (RequestException $e) {
+            $this->assertEquals(200, $e->getCode());
+            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
+                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
+        }
+
+    }
+
+    public function testSubmitCheckAndPollForResult()
+    {
+
+        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+            'en', '');
+
+        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
+        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+
+        try {
+            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+            $responseBody = json_decode($response->getBody());
+            $this->assertEquals(true, isset($responseBody->data->accessToken));
+            $accessToken = $responseBody->data->accessToken;
+
+
+            $checkRequest = new CheckRequest('<x>Simple Test</x>>');
+            $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
+
+            $response = $acrolinxEndPoint->check($accessToken, $checkRequest)->wait(true);
+            $responseBody = json_decode($response->getBody());
+            $this->assertEquals(false, empty($responseBody->data->id));
+
+            $resultUrl = $responseBody->links->result;
+
+            $poller = new Polling($resultUrl, 60);
+            $checkResult = $poller->poll($acrolinxEndPoint, $accessToken);
+            $checkResult = json_decode($checkResult);
+
+            if ($checkResult instanceof RequestException)
+            {
+                $this->assertEquals(200, $checkResult->getCode());
+                $checkResult->getResponse()->getBody()->error->detail;
+                fwrite(STDERR, print_r(PHP_EOL .
+                    $checkResult->getResponse()->getBody()->error->detail .
+                    ' | StatusCode: ' . $checkResult->getCode() . PHP_EOL));
+            }
+
+            $checkScore = $checkResult->data->quality->score;
+
+            $this->assertEquals(true, isset($checkScore));
+
         } catch (RequestException $e) {
             $this->assertEquals(200, $e->getCode());
             fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
