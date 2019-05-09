@@ -116,8 +116,7 @@ class AcrolinxEndpoint
     {
         $request = new Request('GET', $url,
             $this->getCommonHeaders($authToken), null);
-        $httpClient =  new Client();
-        return $httpClient->sendAsync($request);
+        return $this->client->sendAsync($request);
     }
 
     private function getCommonHeaders($authToken)
