@@ -72,7 +72,7 @@ class AcrolinxEndpointTest extends TestCase
             $acrolinxEndPoint->getServerInfo()->wait();
         } catch (RequestException $e) {
             $message = $e->getMessage();
-            $this->assertContains('cURL error 3: <url> malformed', $message);
+            $this->assertContains('cURL error 3', $message);
         }
 
     }

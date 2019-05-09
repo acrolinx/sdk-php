@@ -20,6 +20,7 @@ use Acrolinx\SDK\Models\SsoSignInOptions;
 use Acrolinx\SDK\Models\AcrolinxEndPointProps;
 use Acrolinx\SDK\Models\CheckRequest;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
 
@@ -52,7 +53,7 @@ class AcrolinxEndpoint
 
     /**
      * Get server information
-     *
+     * @throws RequestException
      */
     public function getServerInfo(): PromiseInterface
     {
@@ -61,7 +62,11 @@ class AcrolinxEndpoint
         return $this->client->sendAsync($request);
     }
 
-
+    /**
+     * @param SsoSignInOptions $options
+     * @return PromiseInterface
+     * @throws RequestException
+     */
     public function signIn(SsoSignInOptions $options): PromiseInterface
     {
         $headers = array_merge($this->getSsoRequestHeaders($options), $this->getCommonHeaders(null));
@@ -70,7 +75,11 @@ class AcrolinxEndpoint
         return $this->client->sendAsync($request);
     }
 
-
+    /**
+     * @param string $authToken
+     * @return PromiseInterface
+     * @throws RequestException
+     */
     public function getCapabilities(string $authToken): PromiseInterface
     {
         $request = new Request('GET', '/api/v1/capabilities',
@@ -78,6 +87,12 @@ class AcrolinxEndpoint
         return $this->client->sendAsync($request);
     }
 
+    /**
+     * @param string $authToken
+     * @param CheckRequest $request
+     * @return PromiseInterface
+     * @throws RequestException
+     */
     public function check(string $authToken, CheckRequest $request): PromiseInterface
     {
         $request = new Request('POST', '/api/v1/checking/checks',
@@ -85,6 +100,11 @@ class AcrolinxEndpoint
         return $this->client->sendAsync($request);
     }
 
+    /**
+     * @param string $authToken
+     * @return PromiseInterface
+     * @throws RequestException
+     */
     public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
         $request = new Request('GET', '/api/v1/checking/capabilities',
