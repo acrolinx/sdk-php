@@ -17,12 +17,12 @@
 */
 
 use Acrolinx\SDK\Models\SsoSignInOptions;
-use Acrolinx\SDK\Models\AcrolinxEndPointProps;
+use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
 use Acrolinx\SDK\Models\CheckRequest;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Psr7\Request;
+use Clue\React\Buzz\Browser;
+use React\EventLoop\LoopInterface;
+use React\Promise\PromiseInterface;
+
 
 class AcrolinxEndpoint
 {
@@ -34,12 +34,13 @@ class AcrolinxEndpoint
 
     /**
      * AcrolinxEndpoint constructor.
-     * @param $props
+     * @param AcrolinxEndPointProperties $props
+     * @param LoopInterface $loop
      */
-    public function __construct(AcrolinxEndPointProps $props)
+    public function __construct(AcrolinxEndPointProperties $props, LoopInterface $loop)
     {
         $this->props = $props;
-        $this->client = new Client(['base_uri' => $props->serverAddress]);
+        $this->client = new Browser($loop);
     }
 
     /**
@@ -53,70 +54,58 @@ class AcrolinxEndpoint
 
     /**
      * Get server information
-     * @throws RequestException
      */
     public function getServerInfo(): PromiseInterface
     {
-        $request = new Request('GET', '/api/v1/',
-            $this->getCommonHeaders(null), null);
-        return $this->client->sendAsync($request);
+        return $this->client->get($this->props->serverAddress . '/api/v1/',
+            $this->getCommonHeaders(null));
     }
 
     /**
      * @param SsoSignInOptions $options
      * @return PromiseInterface
-     * @throws RequestException
      */
     public function signIn(SsoSignInOptions $options): PromiseInterface
     {
         $headers = array_merge($this->getSsoRequestHeaders($options), $this->getCommonHeaders(null));
-        $request = new Request('POST', '/api/v1/auth/sign-ins',
-            $headers, null);
-        return $this->client->sendAsync($request);
+        return $this->client->post($this->props->serverAddress . '/api/v1/auth/sign-ins', $headers);
+
     }
 
     /**
      * @param string $authToken
      * @return PromiseInterface
-     * @throws RequestException
      */
     public function getCapabilities(string $authToken): PromiseInterface
     {
-        $request = new Request('GET', '/api/v1/capabilities',
-            $this->getCommonHeaders($authToken), null);
-        return $this->client->sendAsync($request);
+        return $this->client->get($this->props->serverAddress . '/api/v1/capabilities' ,
+            $this->getCommonHeaders($authToken));
     }
 
     /**
      * @param string $authToken
      * @param CheckRequest $request
      * @return PromiseInterface
-     * @throws RequestException
      */
     public function check(string $authToken, CheckRequest $request): PromiseInterface
     {
-        $request = new Request('POST', '/api/v1/checking/checks',
+        return $this->client->post($this->props->serverAddress . '/api/v1/checking/checks',
             $this->getCommonHeaders($authToken), $request->getJson());
-        return $this->client->sendAsync($request);
     }
 
     /**
      * @param string $authToken
      * @return PromiseInterface
-     * @throws RequestException
      */
     public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
-        $request = new Request('GET', '/api/v1/checking/capabilities',
-            $this->getCommonHeaders($authToken), null);
-        return $this->client->sendAsync($request);
+        return $this->client->get($this->props->serverAddress . '/api/v1/checking/capabilities' ,
+            $this->getCommonHeaders($authToken));
     }
 
     public function pollforCheckResult(string $url, string $authToken): PromiseInterface
     {
-        $request = new Request('GET', $url,
-            $this->getCommonHeaders($authToken), null);
-        return $this->client->sendAsync($request);
+        return $this->client->get($url , $this->getCommonHeaders($authToken));
     }
 
     private function getCommonHeaders($authToken)

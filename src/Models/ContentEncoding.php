@@ -20,6 +20,6 @@ namespace Acrolinx\SDK\Models;
 
 abstract class ContentEncoding
 {
-const none = 'none';
-const base64 = 'base64';
+    const none = 'none';
+    const base64 = 'base64';
 }

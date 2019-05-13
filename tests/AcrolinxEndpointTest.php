@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 
-use Acrolinx\SDK\Models\AcrolinxEndPointProps;
+use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
 use Acrolinx\SDK\Models\CheckOptions;
 use Acrolinx\SDK\Models\CheckRange;
 use Acrolinx\SDK\Models\CheckRequest;
@@ -27,8 +27,10 @@ use Acrolinx\SDK\Models\ReportType;
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Acrolinx\SDK\Utils\Polling;
 use Dotenv;
-use GuzzleHttp\Exception\RequestException;
+use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use React\EventLoop\Factory;
 
 
 class AcrolinxEndpointTest extends TestCase
@@ -48,109 +50,177 @@ class AcrolinxEndpointTest extends TestCase
      */
     public function testGetServerInfo()
     {
-        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
-        $response = $acrolinxEndPoint->getServerInfo()->wait(true);
-        $result = json_decode($response->getBody()->getContents(), true);
-        $data = $result['data'];
-        // fwrite(STDERR, print_r(PHP_EOL . var_dump($result) . PHP_EOL));
-        $this->assertEquals(true, isset($data));
-        $status = $response->getStatusCode();
-        $this->assertEquals(200, $status);
+        $loop = Factory::create();
+
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+         $acrolinxEndPoint->getServerInfo()->then(function (ResponseInterface $response) {
+            $result = json_decode($response->getBody()->getContents(), true);
+            $data = $result['data'];
+            $this->assertEquals(true, isset($data));
+            $this->assertEquals(200, $response->getStatusCode());
+            fwrite(STDERR, print_r(PHP_EOL . var_dump($response->getStatusCode()) . PHP_EOL));
+
+
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . var_dump($reason->getMessage()) . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
+
+        $loop->run();
+
     }
 
     private function getProps()
     {
-        return new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+        return new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
             'en', '');
     }
 
     public function testGetServerInfoError()
     {
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, 'SomeFakeURL',
+        $props = new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, 'SomeFakeURL',
             'en', '');
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
-        try {
-            $acrolinxEndPoint->getServerInfo()->wait();
-        } catch (RequestException $e) {
-            $message = $e->getMessage();
-            $this->assertContains('cURL error 3', $message);
-        }
+
+
+        $loop = Factory::create();
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($props, $loop);
+        $acrolinxEndPoint->getServerInfo()->then(function (ResponseInterface $response) {
+            $result = json_decode($response->getBody()->getContents(), true);
+            $data = $result['data'];
+            $this->assertEquals(true, isset($data));
+            $status = $response->getStatusCode();
+            fwrite(STDERR, print_r(PHP_EOL . var_dump($status) . PHP_EOL));
+            $this->assertEquals(200, $status);
+
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . var_dump($reason->getMessage()) . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
+
+        $loop->run();
 
     }
 
     public function testSignIn()
     {
         $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
-        try {
-            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+
+        $loop = Factory::create();
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) {
             $responseBody = json_decode($response->getBody());
+            fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                ' | StatusCode: ' . PHP_EOL));
             $this->assertEquals(true, isset($responseBody->data->accessToken));
 
-        } catch (RequestException $e) {
-            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
-        }
+
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
+
+        $loop->run();
 
     }
 
     public function testSignInError()
     {
         $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, 'wrong password');
-        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
-        $error = NULL;
-        try {
-            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
-            $this->assertNotEquals(200, $response->getStatusCode());
 
-        } catch (RequestException $e) {
-            $this->assertEquals(401, $e->getCode());
-            //fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-            //  ' | StatusCode: ' . $e->getCode() . PHP_EOL));
-        }
+        $loop = Factory::create();
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) {
+            $responseBody = json_decode($response->getBody());
+            fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, isset($responseBody->data->accessToken));
+
+
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
+
+        $loop->run();
     }
 
     public function testPlatformCapabilities()
     {
 
         $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
-        try {
-            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+
+        $loop = Factory::create();
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) use ($acrolinxEndPoint) {
             $responseBody = json_decode($response->getBody());
+            fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                ' | StatusCode: ' . PHP_EOL));
             $this->assertEquals(true, isset($responseBody->data->accessToken));
 
-            $response = $acrolinxEndPoint->getCapabilities($responseBody->data->accessToken)->wait(true);
-            $responseBody = json_decode($response->getBody());
-            $this->assertEquals(true, isset($responseBody->data->checking));
-            $this->assertEquals(true, isset($responseBody->data->document));
+            $acrolinxEndPoint->getCapabilities($responseBody->data->accessToken)->then(function (ResponseInterface $response) {
+                $responseBody = json_decode($response->getBody());
+                fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                    ' | StatusCode: ' . PHP_EOL));
+                $this->assertEquals(true, isset($responseBody->data->checking));
+                $this->assertEquals(true, isset($responseBody->data->document));
 
-        } catch (RequestException $e) {
-            $this->assertEquals(200, $e->getCode());
-            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
-        }
+            }, function (Exception $reason) {
+                fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                    ' | StatusCode: ' . PHP_EOL));
+                $this->assertEquals(true, $reason);
+            });
+
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
+
+        $loop->run();
+
 
     }
 
     public function testPlatformCheckingCapabilities()
     {
+
         $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps());
-        try {
-            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+
+        $loop = Factory::create();
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) use ($acrolinxEndPoint) {
             $responseBody = json_decode($response->getBody());
+            fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                ' | StatusCode: ' . PHP_EOL));
             $this->assertEquals(true, isset($responseBody->data->accessToken));
 
-            $response = $acrolinxEndPoint->getCheckingCapabilities($responseBody->data->accessToken)->wait(true);
-            $responseBody = json_decode($response->getBody());
-            $this->assertEquals(true, isset($responseBody->data->guidanceProfiles));
+            $acrolinxEndPoint->getCheckingCapabilities($responseBody->data->accessToken)->then(function (ResponseInterface $response) {
+                $responseBody = json_decode($response->getBody());
+                fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                    ' | StatusCode: ' . PHP_EOL));
+                $this->assertEquals(true, isset($responseBody->data->guidanceProfiles));
 
-        } catch (RequestException $e) {
-            $this->assertEquals(200, $e->getCode());
-            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
-        }
+            }, function (Exception $reason) {
+                fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                    ' | StatusCode: ' . PHP_EOL));
+                $this->assertEquals(true, $reason);
+            });
+
+        }, function ( Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
+
+        $loop->run();
     }
 
     public function testCheckOptionsClass()
@@ -173,51 +243,71 @@ class AcrolinxEndpointTest extends TestCase
 
     public function testSubmitCheckWithCheckOptions()
     {
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
+        $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
 
-        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $loop = Factory::create();
 
-        try {
-            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) use ($acrolinxEndPoint) {
             $responseBody = json_decode($response->getBody());
+            fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                ' | StatusCode: ' . PHP_EOL));
+            $token = $responseBody->data->accessToken;
             $this->assertEquals(true, isset($responseBody->data->accessToken));
-            $accessToken = $responseBody->data->accessToken;
+
+            $acrolinxEndPoint->getCheckingCapabilities($responseBody->data->accessToken)->then(function (ResponseInterface $response) use ($token, $acrolinxEndPoint) {
+                $responseBody = json_decode($response->getBody());
+                $this->assertEquals(true, isset($responseBody->data->guidanceProfiles));
+
+                $guidanceProfileId = ($responseBody->data->guidanceProfiles)[0]->id;
+                $this->assertEquals(true, isset($guidanceProfileId));
+                fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                    ' | StatusCode: ' . PHP_EOL));
+
+                $checkOptions = new CheckOptions();
+                $checkOptions->batchId = 1;
+                $checkOptions->checkType = CheckType::baseline;
+                $checkOptions->contentFormat = 'TEXT';
+                $checkOptions->disableCustomFieldValidation = false;
+                $checkOptions->reportTypes = array(ReportType::termHarvesting, ReportType::scorecard);
+                $checkOptions->guidanceProfileId = $guidanceProfileId;
+                $checkOptions->languageId = 'en';
+                //$checkOptions->partialCheckRanges = array(new CheckRange(10, 20));
 
 
-            $response = $acrolinxEndPoint->getCheckingCapabilities($accessToken)->wait();
-            $responseBody = json_decode($response->getBody());
-            $this->assertEquals(true, isset($responseBody->data->guidanceProfiles));
+                $checkRequest = new CheckRequest('Simple Test');
+                $checkRequest->checkOptions = $checkOptions;
+                $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
+                $checkRequest->contentEncoding = ContentEncoding::none;
 
-            $guidanceProfileId = ($responseBody->data->guidanceProfiles)[0]->id;
-            $this->assertEquals(true, isset($guidanceProfileId));
+                $acrolinxEndPoint->check($token, $checkRequest)->then(function (ResponseInterface $response) {
+                    $responseBody = json_decode($response->getBody());
+                    $this->assertEquals(false, empty($responseBody->data->id));
+                    fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                        ' | StatusCode: ' . PHP_EOL));
 
+                }, function (Exception $reason) {
+                    fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                        ' | StatusCode: ' . PHP_EOL));
+                });
 
-            $checkOptions = new CheckOptions();
-            $checkOptions->batchId = 1;
-            $checkOptions->checkType = CheckType::baseline;
-            $checkOptions->contentFormat = 'TEXT';
-            $checkOptions->disableCustomFieldValidation = false;
-            $checkOptions->reportTypes = array(ReportType::termHarvesting, ReportType::scorecard);
-            $checkOptions->guidanceProfileId = $guidanceProfileId;
-            $checkOptions->languageId = 'en';
-            //$checkOptions->partialCheckRanges = array(new CheckRange(10, 20));
+            }, function (Exception $reason) {
+                fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                    ' | StatusCode: ' . PHP_EOL));
+                $this->assertEquals(true, $reason);
+            }, function (Exception$reason) {
+                fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                    ' | StatusCode: ' . PHP_EOL));
+                $this->assertEquals(true, $reason);
+            });
 
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
 
-            $checkRequest = new CheckRequest('Simple Test');
-            $checkRequest->checkOptions = $checkOptions;
-            $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
-            $checkRequest->contentEncoding = ContentEncoding::none;
-
-            $response = $acrolinxEndPoint->check($accessToken, $checkRequest)->wait(true);
-            $responseBody = json_decode($response->getBody());
-            $this->assertEquals(false, empty($responseBody->data->id));
-        } catch (RequestException $e) {
-            $this->assertEquals(200, $e->getCode());
-            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
-        }
+        $loop->run();
 
 
     }
@@ -266,80 +356,96 @@ class AcrolinxEndpointTest extends TestCase
     public function testSubmitCheckWithoutOptions()
     {
 
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
+        $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
 
-        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $loop = Factory::create();
 
-        try {
-            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) use ($acrolinxEndPoint) {
             $responseBody = json_decode($response->getBody());
+            fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                ' | StatusCode: ' . PHP_EOL));
+            $token = $responseBody->data->accessToken;
             $this->assertEquals(true, isset($responseBody->data->accessToken));
-            $accessToken = $responseBody->data->accessToken;
-
 
             $checkRequest = new CheckRequest('Simple Test');
+            $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
+            $checkRequest->contentEncoding = ContentEncoding::none;
 
-            $response = $acrolinxEndPoint->check($accessToken, $checkRequest)->wait(true);
-            $responseBody = json_decode($response->getBody());
-            $this->assertEquals(false, empty($responseBody->data->id));
-        } catch (RequestException $e) {
-            $this->assertEquals(200, $e->getCode());
-            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
-        }
+            $acrolinxEndPoint->check($token, $checkRequest)->then(function (ResponseInterface $response) {
+                $responseBody = json_decode($response->getBody());
+                $this->assertEquals(false, empty($responseBody->data->id));
+                fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                    ' | StatusCode: ' . PHP_EOL));
+
+            }, function (Exception $reason) {
+                fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                    ' | StatusCode: ' . PHP_EOL));
+            });
+
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
+
+        $loop->run();
 
     }
 
     public function testSubmitCheckAndPollForResult()
     {
 
-        $props = new AcrolinxEndPointProps($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
-            'en', '');
+        $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
 
-        $ssoOptions = new SsoSignInoptions($this->acrolinxSsoUser, $this->acrolinxPassword);
-        $acrolinxEndPoint = new AcrolinxEndpoint($props);
+        $loop = Factory::create();
 
-        try {
-            $response = $acrolinxEndPoint->signIn($ssoOptions)->wait(true);
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) use ($acrolinxEndPoint, &$loop) {
             $responseBody = json_decode($response->getBody());
+            fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                ' | StatusCode: ' . PHP_EOL));
+            $token = $responseBody->data->accessToken;
             $this->assertEquals(true, isset($responseBody->data->accessToken));
-            $accessToken = $responseBody->data->accessToken;
 
-
-            $checkRequest = new CheckRequest('<x>Simple Test</x>>');
+            $checkRequest = new CheckRequest('Verrry wrooong sentenceee');
             $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
+            $checkRequest->contentEncoding = ContentEncoding::none;
 
-            $response = $acrolinxEndPoint->check($accessToken, $checkRequest)->wait(true);
-            $responseBody = json_decode($response->getBody());
-            $this->assertEquals(false, empty($responseBody->data->id));
+            $acrolinxEndPoint->check($token, $checkRequest)->then(function (ResponseInterface $response) use ($acrolinxEndPoint, $token, &$loop) {
+                $responseBody = json_decode($response->getBody());
+                $this->assertEquals(false, empty($responseBody->data->id));
+                fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
+                    ' | StatusCode: ' . PHP_EOL));
 
-            $resultUrl = $responseBody->links->result;
+                $resultUrl = $responseBody->links->result;
 
-            $poller = new Polling($resultUrl, 60);
-            $checkResult = $poller->poll($acrolinxEndPoint, $accessToken);
-            $checkResult = json_decode($checkResult);
+                $poller = new Polling();
+                $poller->poll($acrolinxEndPoint, $token, $loop, $resultUrl)->then(function (ResponseInterface $response) {
+                    $responseBody = $response->getBody();
+                    $checkResult = json_decode($responseBody);
+                    $checkScore = $checkResult->data->quality->score;
+                    $this->assertEquals(true, isset($checkScore));
 
-            if ($checkResult instanceof RequestException)
-            {
-                $this->assertEquals(200, $checkResult->getCode());
-                $checkResult->getResponse()->getBody()->error->detail;
-                fwrite(STDERR, print_r(PHP_EOL .
-                    $checkResult->getResponse()->getBody()->error->detail .
-                    ' | StatusCode: ' . $checkResult->getCode() . PHP_EOL));
-            }
+                    fwrite(STDERR, print_r(PHP_EOL . $checkScore .
+                        ' | CheckScore ' . PHP_EOL));
+                }, function (Exception $reason) {
+                    fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                        ' | StatusCode: ' . PHP_EOL));
+                });
 
-            $checkScore = $checkResult->data->quality->score;
+            }, function (Exception $reason) {
+                fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                    ' | StatusCode: ' . PHP_EOL));
+            });
 
-            $this->assertEquals(true, isset($checkScore));
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+            $this->assertEquals(true, $reason);
+        });
 
-        } catch (RequestException $e) {
-            $this->assertEquals(200, $e->getCode());
-            fwrite(STDERR, print_r(PHP_EOL . $e->getMessage() .
-                ' | StatusCode: ' . $e->getCode() . PHP_EOL));
-        }
+        $loop->run();
 
     }
-
 }

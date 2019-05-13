@@ -19,7 +19,7 @@
 namespace Acrolinx\SDK\Models;
 
 
-class AcrolinxEndPointProps
+class AcrolinxEndPointProperties
 {
     public $clientSignature = '';
     public $clientLocale = 'en';
