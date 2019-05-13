@@ -306,7 +306,6 @@ class AcrolinxEndpointTest extends TestCase
         $acrolinxEndPoint->check($token, $checkRequest)->then(function (ResponseInterface $response)
         use ($acrolinxEndPoint, $token, &$loop, &$checkScore) {
             $responseBody = json_decode($response->getBody());
-            $this->assertEquals(false, empty($responseBody->data->id));
             // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
             //    ' | StatusCode: ' . PHP_EOL));
 
