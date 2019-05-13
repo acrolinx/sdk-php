@@ -29,6 +29,15 @@ class Polling
 
             $endpoint->pollforCheckResult($url, $authToken)->then(
                 function (ResponseInterface $response) use ($deferred, $loop, &$timer) {
+                    // TODO should we set the new timer interval from response-body (retry after)?
+                    /* {
+                        "progress": {
+                        "percent": 20,
+                        "message": "Waiting in queue",
+                        "retryAfter": "2"
+                        }
+                        }*/
+
                     if ($response->getStatusCode() == 201) {
                         // ToDo: Notify progress
                         fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . var_dump($response->getStatusCode()) . PHP_EOL));

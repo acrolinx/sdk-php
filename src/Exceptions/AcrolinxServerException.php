@@ -20,6 +20,7 @@ namespace Acrolinx\SDK\Exceptions;
 
 use Exception;
 
+// TODO delete class if not in use
 class AcrolinxServerException extends Exception
 {
 

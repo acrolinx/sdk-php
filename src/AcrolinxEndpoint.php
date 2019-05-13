@@ -78,7 +78,7 @@ class AcrolinxEndpoint
      */
     public function getCapabilities(string $authToken): PromiseInterface
     {
-        return $this->client->get($this->props->serverAddress . '/api/v1/capabilities' ,
+        return $this->client->get($this->props->serverAddress . '/api/v1/capabilities',
             $this->getCommonHeaders($authToken));
     }
 
@@ -99,13 +99,19 @@ class AcrolinxEndpoint
      */
     public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
-        return $this->client->get($this->props->serverAddress . '/api/v1/checking/capabilities' ,
+        return $this->client->get($this->props->serverAddress . '/api/v1/checking/capabilities',
             $this->getCommonHeaders($authToken));
     }
 
     public function pollforCheckResult(string $url, string $authToken): PromiseInterface
     {
-        return $this->client->get($url , $this->getCommonHeaders($authToken));
+        return $this->client->get($url, $this->getCommonHeaders($authToken));
+    }
+
+    public function getAcrolinxContentAnalysisDashboard(string $authToken, string $batchId)
+    {
+        return $this->client->get($this->props->serverAddress . '/api/v1/checking/' . $batchId . '/contentanalysis',
+            $this->getCommonHeaders($authToken));
     }
 
     private function getCommonHeaders($authToken)

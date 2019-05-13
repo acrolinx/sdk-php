@@ -333,6 +333,27 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
+    public function testGetAcrolinxContentAnalysisDashboard()
+    {
+        $loop = Factory::create();
+        $token = $this->acrolinxAuthToken;
+        $responseData = null;
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+
+        $acrolinxEndPoint->getAcrolinxContentAnalysisDashboard($token, '1')->
+        then(function (ResponseInterface $response) use (&$responseData) {
+            $responseBody = $response->getBody();
+            $checkResult = json_decode($responseBody);
+            $responseData = $checkResult->data;
+        }, function (Exception $reason) {
+            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                ' | StatusCode: ' . PHP_EOL));
+        });
+        $loop->run();
+        $this->assertTrue(isset($responseData->links));
+    }
+
     protected
     function setUp(): void
     {
