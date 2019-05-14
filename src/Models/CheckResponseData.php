@@ -19,14 +19,21 @@
 namespace Acrolinx\SDK\Models;
 
 
-class CheckRange
+class CheckResponseData
 {
-    public $begin;
-    public $end;
 
-    public function __construct(int $begin, int $end)
+    private $id;
+
+    public function __construct($data)
     {
-        $this->end = $end;
-        $this->begin = $begin;
+        $this->id = $data->id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 }

@@ -16,11 +16,16 @@
 * limitations under the License.
 */
 
-use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
 use Acrolinx\SDK\Models\CheckRequest;
+use Acrolinx\SDK\Models\CheckResponse;
+use Acrolinx\SDK\Models\SsoSignInOptions;
 use Clue\React\Buzz\Browser;
+use Exception;
+use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 
 
@@ -61,6 +66,26 @@ class AcrolinxEndpoint
             $this->getCommonHeaders(null));
     }
 
+    private function getCommonHeaders($authToken)
+    {
+        $headers = [
+            'X-Acrolinx-Client' => $this->props->clientSignature,
+            'X-Acrolinx-Base-Url' => $this->props->baseUrl,
+            'Content-Type' => 'application/json'
+        ];
+
+        if (!is_null($this->props->clientLocale)) {
+            $headers['X-Acrolinx-Client-Locale'] = $this->props->clientLocale;
+        }
+
+        if (!is_null($authToken)) {
+            $headers['X-Acrolinx-Auth'] = $authToken;
+        }
+
+
+        return $headers;
+    }
+
     /**
      * @param SsoSignInOptions $options
      * @return PromiseInterface
@@ -70,6 +95,14 @@ class AcrolinxEndpoint
         $headers = array_merge($this->getSsoRequestHeaders($options), $this->getCommonHeaders(null));
         return $this->client->post($this->props->serverAddress . '/api/v1/auth/sign-ins', $headers);
 
+    }
+
+    private function getSsoRequestHeaders(SsoSignInOptions $options): array
+    {
+        return [
+            $options->getUsernameKey() => $options->getUserId(),
+            $options->getPasswordKey() => $options->getPassword()
+        ];
     }
 
     /**
@@ -89,8 +122,22 @@ class AcrolinxEndpoint
      */
     public function check(string $authToken, CheckRequest $request): PromiseInterface
     {
-        return $this->client->post($this->props->serverAddress . '/api/v1/checking/checks',
-            $this->getCommonHeaders($authToken), $request->getJson());
+        $deferred = new Deferred();
+
+        $this->client->post($this->props->serverAddress . '/api/v1/checking/checks',
+            $this->getCommonHeaders($authToken), $request->getJson())->then(function (ResponseInterface $response)
+        use ($deferred) {
+            $responseBody = json_decode($response->getBody());
+            $checkResponse = new CheckResponse($responseBody->data, $responseBody->links);
+            $deferred->resolve($checkResponse);
+        }, function (Exception $reason) use ($deferred) {
+            $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
+                $reason->getPrevious(), 'Submitting check failed');
+            $deferred->reject($exception);
+
+        });
+
+        return $deferred->promise();
     }
 
     /**
@@ -112,33 +159,5 @@ class AcrolinxEndpoint
     {
         return $this->client->get($this->props->serverAddress . '/api/v1/checking/' . $batchId . '/contentanalysis',
             $this->getCommonHeaders($authToken));
-    }
-
-    private function getCommonHeaders($authToken)
-    {
-        $headers = [
-            'X-Acrolinx-Client' => $this->props->clientSignature,
-            'X-Acrolinx-Base-Url' => $this->props->baseUrl,
-            'Content-Type' => 'application/json'
-        ];
-
-        if (!is_null($this->props->clientLocale)) {
-            $headers['X-Acrolinx-Client-Locale'] = $this->props->clientLocale;
-        }
-
-        if (!is_null($authToken)) {
-            $headers['X-Acrolinx-Auth'] = $authToken;
-        }
-
-
-        return $headers;
-    }
-
-    private function getSsoRequestHeaders(SsoSignInOptions $options): array
-    {
-        return [
-            $options->getUsernameKey() => $options->getUserId(),
-            $options->getPasswordKey() => $options->getPassword()
-        ];
     }
 }

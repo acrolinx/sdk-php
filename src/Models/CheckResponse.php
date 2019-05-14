@@ -19,15 +19,26 @@
 namespace Acrolinx\SDK\Models;
 
 
-class CheckResponse extends SuccessResponse
+class CheckResponse extends CheckResponseData
 {
-    public $links = array('result'=>'', 'cancel'=>'');
+    private $links = array();
 
-    public function __construct($data, array $links)
+
+    public function __construct($data, $links)
     {
-        parent::__construct($data, $links);
-        $this->links['result'] = $links['result'];
-        $this->links['cancel'] = $links['cancel'];
+        parent::__construct($data);
+        $this->links['result'] = $links->result;
+        $this->links['cancel'] = $links->cancel;
+    }
+
+
+    /**
+     * @return array
+     */
+    public function getLinks(): array
+    {
+        return $this->links;
     }
 
 }
+
