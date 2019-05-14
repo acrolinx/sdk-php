@@ -10,3 +10,6 @@ sonar.tests                     tests
 
 sonar.php.tests.reportPath      tmp/junit.xml
 sonar.php.coverage.reportPaths  tmp/clover.xml
+
+sonar.dependencyCheck.reportPath        tmp/dependency-check-report.xml
+sonar.dependencyCheck.htmlReportPath    tmp/dependency-check-report.html
