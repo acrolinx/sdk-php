@@ -1,11 +1,12 @@
 # Note: sonar.projectVersion will be set by Jenkins.
 
-sonar.projectKey            com.acrolinx.sdk-php
-sonar.projectName           PHP SDK
+sonar.projectKey                com.acrolinx.sdk-php
+sonar.projectName               PHP SDK
 
-sonar.sourceEncoding        UTF-8
+sonar.sourceEncoding            UTF-8
 
-sonar.sources               src
-sonar.tests                 tests
+sonar.sources                   src
+sonar.tests                     tests
 
-sonar.php.tests.reportPath  tmp/junit.xml
+sonar.php.tests.reportPath      tmp/junit.xml
+sonar.php.coverage.reportPaths  tmp/clover.xml
