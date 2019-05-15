@@ -19,14 +19,17 @@
 namespace Acrolinx\SDK\Models;
 
 
+use Psr\Http\Message\ResponseInterface;
+
 class CheckResponseData
 {
 
     private $id;
 
-    public function __construct($data)
+    public function __construct(ResponseInterface $response)
     {
-        $this->id = $data->id;
+        $responseBody = json_decode($response->getBody());
+        $this->id = $responseBody->data->id;
     }
 
     /**

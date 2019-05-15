@@ -26,7 +26,7 @@ class Report
     private $linkAuthenticated;
     private $link;
 
-    public function __construct(Url $linkAuthenticated, Url $link)
+    public function __construct(string $linkAuthenticated, string $link)
     {
         $this->linkAuthenticated = $linkAuthenticated;
         $this->link = $link;
@@ -35,7 +35,7 @@ class Report
     /**
      * @return Url
      */
-    public function getLink(): Url
+    public function getLink(): string
     {
         return $this->link;
     }
@@ -43,7 +43,7 @@ class Report
     /**
      * @return Url
      */
-    public function getLinkAuthenticated(): Url
+    public function getLinkAuthenticated(): string
     {
         return $this->linkAuthenticated;
     }

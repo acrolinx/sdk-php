@@ -19,16 +19,19 @@
 namespace Acrolinx\SDK\Models;
 
 
+use Psr\Http\Message\ResponseInterface;
+
 class CheckResponse extends CheckResponseData
 {
     private $links = array();
 
 
-    public function __construct($data, $links)
+    public function __construct(ResponseInterface $response)
     {
-        parent::__construct($data);
-        $this->links['result'] = $links->result;
-        $this->links['cancel'] = $links->cancel;
+        parent::__construct($response);
+        $responseBody = json_decode($response->getBody());
+        $this->links['result'] = $responseBody->links->result;
+        $this->links['cancel'] = $responseBody->links->cancel;
     }
 
 

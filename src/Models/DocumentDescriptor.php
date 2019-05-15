@@ -23,13 +23,11 @@ class DocumentDescriptor
 {
     private $id;
     private $customFields;
-    private $displayInfo;
 
-    public function __construct(string $id, CustomFieldCommon $customFieldCommon, string $displayInfo)
+    public function __construct(string $id, CustomFieldCommon $customFieldCommon)
     {
         $this->id = $id;
         $this->customFields = $customFieldCommon;
-        $this->displayInfo = $displayInfo;
     }
 
     /**
@@ -40,13 +38,6 @@ class DocumentDescriptor
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
-    public function getDisplayInfo(): string
-    {
-        return $this->displayInfo;
-    }
 
     /**
      * @return CustomFieldCommon

@@ -20,11 +20,13 @@ use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
 use Acrolinx\SDK\Models\CheckRequest;
 use Acrolinx\SDK\Models\CheckResponse;
+use Acrolinx\SDK\Models\CheckResult;
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Clue\React\Buzz\Browser;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\LoopInterface;
+use React\EventLoop\TimerInterface;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 
@@ -36,6 +38,7 @@ class AcrolinxEndpoint
     private $clientLocale = 'en';
     private $props = null;
     private $client;
+    private $loop;
 
     /**
      * AcrolinxEndpoint constructor.
@@ -46,6 +49,7 @@ class AcrolinxEndpoint
     {
         $this->props = $props;
         $this->client = new Browser($loop);
+        $this->loop = $loop;
     }
 
     /**
@@ -127,14 +131,12 @@ class AcrolinxEndpoint
         $this->client->post($this->props->serverAddress . '/api/v1/checking/checks',
             $this->getCommonHeaders($authToken), $request->getJson())->then(function (ResponseInterface $response)
         use ($deferred) {
-            $responseBody = json_decode($response->getBody());
-            $checkResponse = new CheckResponse($responseBody->data, $responseBody->links);
+            $checkResponse = new CheckResponse($response);
             $deferred->resolve($checkResponse);
         }, function (Exception $reason) use ($deferred) {
             $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
                 $reason->getPrevious(), 'Submitting check failed');
             $deferred->reject($exception);
-
         });
 
         return $deferred->promise();
@@ -152,7 +154,42 @@ class AcrolinxEndpoint
 
     public function pollforCheckResult(string $url, string $authToken): PromiseInterface
     {
-        return $this->client->get($url, $this->getCommonHeaders($authToken));
+        $deferred = new Deferred();
+        $pollingLoop = $this->loop;
+
+
+        $pollingLoop->addPeriodicTimer(1, function (TimerInterface $timer)
+        use ($deferred, &$pollingLoop, &$authToken, &$url) {
+
+
+            $this->client->get($url, $this->getCommonHeaders($authToken))->then(
+                function (ResponseInterface $response) use ($deferred, &$pollingLoop, &$timer) {
+                    // TODO should we set the new timer interval from response-body (retry after)?
+                    /* {
+                        "progress": {
+                        "percent": 20,
+                        "message": "Waiting in queue",
+                        "retryAfter": "2"
+                        }
+                        }*/
+                    if ($response->getStatusCode() == 201) {
+                        // ToDo: Notify progress
+                        fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . var_dump($response->getStatusCode()) . PHP_EOL));
+                    }
+                    if ($response->getStatusCode() == 200) {
+                        $checkResult = new CheckResult($response);
+                        $deferred->resolve($checkResult);
+                        $pollingLoop->cancelTimer($timer);
+                    }
+                }, function (Exception $reason) use ($deferred, &$pollingLoop, &$timer) {
+                    $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(), $reason->getPrevious(),
+                        'Unable to fetch check result');
+                $deferred->reject($exception);
+                $pollingLoop->cancelTimer($timer);
+            });
+        });
+
+        return $deferred->promise();
     }
 
     public function getAcrolinxContentAnalysisDashboard(string $authToken, string $batchId)

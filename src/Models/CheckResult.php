@@ -19,6 +19,8 @@
 namespace Acrolinx\SDK\Models;
 
 
+use Psr\Http\Message\ResponseInterface;
+
 class CheckResult
 {
 
@@ -27,13 +29,20 @@ class CheckResult
     private $quality;
     private $reports;
 
-    public function __construct(string $id, DocumentDescriptor $documentDescriptor,
-                                DocumentQuality $documentQuality, CheckResultReports $reports)
+    public function __construct(ResponseInterface $response)
     {
-        $this->id = $id;
-        $this->document = $documentDescriptor;
-        $this->quality = $documentQuality;
-        $this->reports = $reports;
+        $responseBody = json_decode($response->getBody());
+        $this->id = $responseBody->data->id;
+
+        $commonCustomFieldStdObj = $responseBody->data->document->customFields[0];
+        $customFieldCommon = new CustomFieldCommon($commonCustomFieldStdObj->displayName,
+            $commonCustomFieldStdObj->key, $commonCustomFieldStdObj->possibleValues);
+
+        $this->document = new DocumentDescriptor($responseBody->data->document->id, $customFieldCommon);
+        $this->quality = new DocumentQuality($responseBody->data->quality->score, $responseBody->data->quality->status);
+        $this->reports = new Report($responseBody->data->reports->scorecard->linkAuthenticated,
+            $responseBody->data->reports->scorecard->link);
+
     }
 
     /**

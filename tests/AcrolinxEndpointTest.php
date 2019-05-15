@@ -20,12 +20,13 @@ use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
 use Acrolinx\SDK\Models\CheckOptions;
 use Acrolinx\SDK\Models\CheckRange;
 use Acrolinx\SDK\Models\CheckRequest;
+use Acrolinx\SDK\Models\CheckResponse;
+use Acrolinx\SDK\Models\CheckResult;
 use Acrolinx\SDK\Models\CheckType;
 use Acrolinx\SDK\Models\ContentEncoding;
 use Acrolinx\SDK\Models\DocumentDescriptorRequest;
 use Acrolinx\SDK\Models\ReportType;
 use Acrolinx\SDK\Models\SsoSignInOptions;
-use Acrolinx\SDK\Utils\Polling;
 use Dotenv;
 use Exception;
 use PHPUnit\Framework\TestCase;
@@ -237,12 +238,12 @@ class AcrolinxEndpointTest extends TestCase
             $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
             $checkRequest->contentEncoding = ContentEncoding::none;
 
-            $acrolinxEndPoint->check($token, $checkRequest)->
-            then(function (ResponseInterface $response) use (&$checkResponseBody) {
-                $checkResponseBody = json_decode($response->getBody());
-                // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
-                //    ' | StatusCode: ' . PHP_EOL));
+            //fwrite(STDERR, print_r(PHP_EOL . 'Content::: '.$checkRequest->content .
+              //  ' | StatusCode: ' . PHP_EOL));
 
+            $acrolinxEndPoint->check($token, $checkRequest)->
+            then(function (CheckResponse $response) use (&$checkResponseBody) {
+                $checkResponseBody = $response;
             }, function (Exception $reason) {
                 fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
                     ' | StatusCode: ' . PHP_EOL));
@@ -257,7 +258,7 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        $this->assertEquals(false, empty($checkResponseBody->data->id));
+        $this->assertEquals(false, empty($checkResponseBody->getId()));
     }
 
     public
@@ -274,10 +275,8 @@ class AcrolinxEndpointTest extends TestCase
         $checkRequest->contentEncoding = ContentEncoding::none;
 
         $acrolinxEndPoint->check($token, $checkRequest)->
-        then(function (ResponseInterface $response) use (&$checkResponseBody) {
-            $checkResponseBody = json_decode($response->getBody());
-            // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
-            //    ' | StatusCode: ' . PHP_EOL));
+        then(function (CheckResponse $response) use (&$checkResponseBody) {
+            $checkResponseBody = $response;
 
         }, function (Exception $reason) {
             fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
@@ -285,7 +284,7 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        $this->assertEquals(false, empty($checkResponseBody->data->id));
+        $this->assertEquals(false, empty($checkResponseBody->getId()));
     }
 
     public
@@ -303,22 +302,15 @@ class AcrolinxEndpointTest extends TestCase
         $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
         $checkRequest->contentEncoding = ContentEncoding::none;
 
-        $acrolinxEndPoint->check($token, $checkRequest)->then(function (ResponseInterface $response)
+        $acrolinxEndPoint->check($token, $checkRequest)->then(function (CheckResponse $response)
         use ($acrolinxEndPoint, $token, &$loop, &$checkScore) {
-            $responseBody = json_decode($response->getBody());
-            // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
-            //    ' | StatusCode: ' . PHP_EOL));
 
-            $resultUrl = $responseBody->links->result;
+            $resultUrl = $response->getLinks()['result'];
 
-            $poller = new Polling();
-            $poller->poll($acrolinxEndPoint, $token, $loop, $resultUrl)->
-            then(function (ResponseInterface $response) use (&$checkScore) {
-                $responseBody = $response->getBody();
-                $checkResult = json_decode($responseBody);
-                $checkScore = $checkResult->data->quality->score;
-                // fwrite(STDERR, print_r(PHP_EOL . $checkScore .
-                //    ' | CheckScore ' . PHP_EOL));
+            $acrolinxEndPoint->pollforCheckResult($resultUrl, $token)->
+            then(function (CheckResult $response) use (&$checkScore) {
+
+                $checkScore = $response->getQuality()->getScore();
             }, function (Exception $reason) {
                 fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
                     ' | StatusCode: ' . PHP_EOL));
@@ -330,7 +322,6 @@ class AcrolinxEndpointTest extends TestCase
 
         $loop->run();
         $this->assertEquals(true, isset($checkScore));
-
     }
 
     public function testGetAcrolinxContentAnalysisDashboard()
