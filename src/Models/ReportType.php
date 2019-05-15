@@ -22,8 +22,8 @@ use MyCLabs\Enum\Enum;
 
 class ReportType extends Enum
 {
-    const termHarvesting = 'termHarvesting';
-    const scorecard = 'scorecard';
-    const extractedText = 'extractedText';
-    const request_text = 'extractedText';
+    const TERMHARVESTING = 'termHarvesting';
+    const SCORECARD = 'scorecard';
+    const EXTRACTEDTEXT = 'extractedText';
+    const REQUESTTEXT = 'extractedText';
 }

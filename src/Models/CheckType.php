@@ -22,8 +22,8 @@ use MyCLabs\Enum\Enum;
 
 class CheckType extends Enum
 {
-    const batch = 'batch';
-    const interactive = 'interactive';
-    const baseline = 'baseline';
-    const automated = 'automated';
+    const BATCH = 'batch';
+    const INTERACTIVE = 'interactive';
+    const BASELINE = 'baseline';
+    const AUTOMATED = 'automated';
 }

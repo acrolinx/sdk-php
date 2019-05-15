@@ -22,7 +22,7 @@ use MyCLabs\Enum\Enum;
 
 class GuidanceProfileStatus extends Enum
 {
-    const ready = 'ready';
-    const loading = 'loading';
-    const unavailable = 'unavailable';
+    const READY = 'ready';
+    const LOADING = 'loading';
+    const UNAVAILABLE = 'unavailable';
 }

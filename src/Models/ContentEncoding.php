@@ -22,6 +22,6 @@ use MyCLabs\Enum\Enum;
 
 class ContentEncoding extends Enum
 {
-    const none = 'none';
-    const base64 = 'base64';
+    const NONE = 'none';
+    const BASE64 = 'base64';
 }

@@ -21,7 +21,7 @@ namespace Acrolinx\SDK\Models;
 
 abstract class DocumentQualityStatus
 {
-    const red = 'red';
-    const yellow = 'yellow';
-    const green = 'green';
+    const RED = 'red';
+    const YELLOW = 'yellow';
+    const GREEN = 'green';
 }
