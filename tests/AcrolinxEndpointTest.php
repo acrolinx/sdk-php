@@ -195,10 +195,10 @@ class AcrolinxEndpointTest extends TestCase
     {
         $checkOptions = new CheckOptions();
         $checkOptions->batchId = 1;
-        $checkOptions->checkType = CheckType::baseline;
+        $checkOptions->checkType = CheckType::BASELINE;
         $checkOptions->contentFormat = 'XML';
         $checkOptions->disableCustomFieldValidation = false;
-        $checkOptions->reportTypes = array(ReportType::termHarvesting, ReportType::scorecard);
+        $checkOptions->reportTypes = array(ReportType::TERMHARVESTING, ReportType::SCORECARD);
         $checkOptions->guidanceProfileId = '2';
         $checkOptions->languageId = 'en';
         $checkOptions->partialCheckRanges = new CheckRange(10, 20);
@@ -227,16 +227,16 @@ class AcrolinxEndpointTest extends TestCase
 
             $checkOptions = new CheckOptions();
             $checkOptions->batchId = 1;
-            $checkOptions->checkType = CheckType::baseline;
+            $checkOptions->checkType = CheckType::BASELINE;
             $checkOptions->contentFormat = 'TEXT';
             $checkOptions->disableCustomFieldValidation = false;
-            $checkOptions->reportTypes = array(ReportType::termHarvesting, ReportType::scorecard);
+            $checkOptions->reportTypes = array(ReportType::TERMHARVESTING, ReportType::SCORECARD);
             $checkOptions->guidanceProfileId = $guidanceProfileId;
             $checkOptions->languageId = 'en';
             $checkRequest = new CheckRequest('Simple Test');
             $checkRequest->checkOptions = $checkOptions;
             $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
-            $checkRequest->contentEncoding = ContentEncoding::none;
+            $checkRequest->contentEncoding = ContentEncoding::NONE;
 
             //fwrite(STDERR, print_r(PHP_EOL . 'Content::: '.$checkRequest->content .
               //  ' | StatusCode: ' . PHP_EOL));
@@ -272,7 +272,7 @@ class AcrolinxEndpointTest extends TestCase
 
         $checkRequest = new CheckRequest('Simple Test');
         $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
-        $checkRequest->contentEncoding = ContentEncoding::none;
+        $checkRequest->contentEncoding = ContentEncoding::NONE;
 
         $acrolinxEndPoint->check($token, $checkRequest)->
         then(function (CheckResponse $response) use (&$checkResponseBody) {
@@ -300,7 +300,7 @@ class AcrolinxEndpointTest extends TestCase
 
         $checkRequest = new CheckRequest('Verrry wrooong sentenceee');
         $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
-        $checkRequest->contentEncoding = ContentEncoding::none;
+        $checkRequest->contentEncoding = ContentEncoding::NONE;
 
         $acrolinxEndPoint->check($token, $checkRequest)->then(function (CheckResponse $response)
         use ($acrolinxEndPoint, $token, &$loop, &$checkScore) {

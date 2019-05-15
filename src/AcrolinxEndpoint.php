@@ -174,7 +174,7 @@ class AcrolinxEndpoint
                         }*/
                     if ($response->getStatusCode() == 201) {
                         // ToDo: Notify progress
-                        fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . var_dump($response->getStatusCode()) . PHP_EOL));
+                        fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . $response->getStatusCode() . PHP_EOL));
                     }
                     if ($response->getStatusCode() == 200) {
                         $checkResult = new CheckResult($response);
