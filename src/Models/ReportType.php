@@ -18,7 +18,9 @@
 
 namespace Acrolinx\SDK\Models;
 
-abstract class ReportType
+use MyCLabs\Enum\Enum;
+
+class ReportType extends Enum
 {
     const termHarvesting = 'termHarvesting';
     const scorecard = 'scorecard';

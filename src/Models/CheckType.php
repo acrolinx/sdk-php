@@ -18,10 +18,12 @@
 
 namespace Acrolinx\SDK\Models;
 
-abstract class CheckType
+use MyCLabs\Enum\Enum;
+
+class CheckType extends Enum
 {
-const batch = 'batch';
-const interactive = 'interactive';
-const baseline = 'baseline';
-const automated = 'automated';
+    const batch = 'batch';
+    const interactive = 'interactive';
+    const baseline = 'baseline';
+    const automated = 'automated';
 }

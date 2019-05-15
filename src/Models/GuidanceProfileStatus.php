@@ -18,7 +18,9 @@
 
 namespace Acrolinx\SDK\Models;
 
-abstract class GuidanceProfileStatus
+use MyCLabs\Enum\Enum;
+
+class GuidanceProfileStatus extends Enum
 {
     const ready = 'ready';
     const loading = 'loading';

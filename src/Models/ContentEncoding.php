@@ -18,7 +18,9 @@
 
 namespace Acrolinx\SDK\Models;
 
-abstract class ContentEncoding
+use MyCLabs\Enum\Enum;
+
+class ContentEncoding extends Enum
 {
     const none = 'none';
     const base64 = 'base64';
