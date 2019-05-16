@@ -18,9 +18,11 @@
 
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
+use Acrolinx\SDK\Models\CheckingCapabilities;
 use Acrolinx\SDK\Models\CheckRequest;
 use Acrolinx\SDK\Models\CheckResponse;
 use Acrolinx\SDK\Models\CheckResult;
+use Acrolinx\SDK\Models\PlatformCapabilities;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Clue\React\Buzz\Browser;
@@ -130,8 +132,19 @@ class AcrolinxEndpoint
      */
     public function getCapabilities(string $authToken): PromiseInterface
     {
-        return $this->client->get($this->props->serverAddress . '/api/v1/capabilities',
-            $this->getCommonHeaders($authToken));
+        $deferred = new Deferred();
+
+        $this->client->get($this->props->serverAddress . '/api/v1/capabilities',
+            $this->getCommonHeaders($authToken))->then(function (ResponseInterface $response) use ($deferred) {
+                $platformCapabilities = new PlatformCapabilities($response);
+                $deferred->resolve($platformCapabilities);
+        }, function (Exception $reason) use ($deferred) {
+                $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
+                    $reason->getPrevious(), 'Fetching platform capabilities failed');
+                $deferred->reject($exception);
+        });
+
+        return $deferred->promise();
     }
 
     /**
@@ -163,8 +176,19 @@ class AcrolinxEndpoint
      */
     public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
-        return $this->client->get($this->props->serverAddress . '/api/v1/checking/capabilities',
-            $this->getCommonHeaders($authToken));
+        $deferred = new Deferred();
+        $this->client->get($this->props->serverAddress . '/api/v1/checking/capabilities',
+            $this->getCommonHeaders($authToken))->then(function (ResponseInterface $response) use ($deferred) {
+            $responseBody = json_decode($response->getBody());
+            $capabilities =  new CheckingCapabilities($responseBody->data);
+                $deferred->resolve($capabilities);
+        }, function (Exception $reason) use ($deferred) {
+                $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
+                    $reason->getPrevious(), 'Fetching checking capabilities failed');
+                $deferred->reject($exception);
+        });
+
+        return $deferred->promise();
     }
 
     public function pollforCheckResult(string $url, string $authToken): PromiseInterface
