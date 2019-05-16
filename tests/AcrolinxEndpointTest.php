@@ -18,6 +18,7 @@
 
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
+use Acrolinx\SDK\Models\CheckingCapabilities;
 use Acrolinx\SDK\Models\CheckOptions;
 use Acrolinx\SDK\Models\CheckRange;
 use Acrolinx\SDK\Models\CheckRequest;
@@ -26,6 +27,7 @@ use Acrolinx\SDK\Models\CheckResult;
 use Acrolinx\SDK\Models\CheckType;
 use Acrolinx\SDK\Models\ContentEncoding;
 use Acrolinx\SDK\Models\DocumentDescriptorRequest;
+use Acrolinx\SDK\Models\PlatformCapabilities;
 use Acrolinx\SDK\Models\ReportType;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
@@ -153,11 +155,8 @@ class AcrolinxEndpointTest extends TestCase
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
         $acrolinxEndPoint->getCapabilities($this->acrolinxAuthToken)->
-        then(function (ResponseInterface $response) use (&$responseBody) {
-            $responseBody = json_decode($response->getBody());
-            // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
-            //    ' | StatusCode: ' . PHP_EOL));
-
+        then(function (PlatformCapabilities $response) use (&$responseBody) {
+            $responseBody = $response;
 
         }, function (Exception $reason) {
             fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
@@ -165,8 +164,8 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        $this->assertEquals(true, isset($responseBody->data->checking));
-        $this->assertEquals(true, isset($responseBody->data->document));
+        //fwrite(STDERR, print_r($responseBody));
+        $this->assertEquals(true, isset($responseBody));
 
     }
 
@@ -176,8 +175,8 @@ class AcrolinxEndpointTest extends TestCase
         $loop = Factory::create();
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
         $acrolinxEndPoint->getCheckingCapabilities($this->acrolinxAuthToken)->
-        then(function (ResponseInterface $response) use (&$responseBody) {
-            $responseBody = json_decode($response->getBody());
+        then(function (CheckingCapabilities $response) use (&$responseBody) {
+            $responseBody = $response;
             // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
             //    ' | StatusCode: ' . PHP_EOL));
         }, function (Exception $reason) {
@@ -186,7 +185,9 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        $this->assertEquals(true, isset($responseBody->data->guidanceProfiles));
+        $guidanceProfiles = $responseBody->getGuidanceProfiles();
+
+        $this->assertEquals(true, isset($guidanceProfiles));
     }
 
     public
@@ -217,9 +218,8 @@ class AcrolinxEndpointTest extends TestCase
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
 
         $acrolinxEndPoint->getCheckingCapabilities($token)->
-        then(function (ResponseInterface $response) use (&$checkResponseBody, $token, $acrolinxEndPoint) {
-            $responseBody = json_decode($response->getBody());
-            $guidanceProfileId = ($responseBody->data->guidanceProfiles)[0]->id;
+        then(function (CheckingCapabilities $response) use (&$checkResponseBody, $token, $acrolinxEndPoint) {
+            $guidanceProfileId = $response->getGuidanceProfiles()[0]->getId();
 
             // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
             //    ' | StatusCode: ' . PHP_EOL));
