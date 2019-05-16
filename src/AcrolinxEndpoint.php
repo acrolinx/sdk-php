@@ -21,6 +21,7 @@ use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
 use Acrolinx\SDK\Models\CheckRequest;
 use Acrolinx\SDK\Models\CheckResponse;
 use Acrolinx\SDK\Models\CheckResult;
+use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Clue\React\Buzz\Browser;
 use Exception;
@@ -96,8 +97,22 @@ class AcrolinxEndpoint
      */
     public function signIn(SsoSignInOptions $options): PromiseInterface
     {
+        $deferred = new Deferred();
+
         $headers = array_merge($this->getSsoRequestHeaders($options), $this->getCommonHeaders(null));
-        return $this->client->post($this->props->serverAddress . '/api/v1/auth/sign-ins', $headers);
+        $this->client->post($this->props->serverAddress . '/api/v1/auth/sign-ins', $headers)->then(function (ResponseInterface $response)
+        use($deferred){
+            $successResponse =  new SignInSuccessData($response);
+            $deferred->resolve($successResponse);
+
+        },function (Exception $reason) use($deferred) {
+            $exception =  new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
+                $reason->getPrevious(), 'SignIn Failed');
+            $deferred->reject($exception);
+
+        });
+
+        return $deferred->promise();
 
     }
 

@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 
+use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
 use Acrolinx\SDK\Models\CheckOptions;
 use Acrolinx\SDK\Models\CheckRange;
@@ -26,6 +27,7 @@ use Acrolinx\SDK\Models\CheckType;
 use Acrolinx\SDK\Models\ContentEncoding;
 use Acrolinx\SDK\Models\DocumentDescriptorRequest;
 use Acrolinx\SDK\Models\ReportType;
+use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Dotenv;
 use Exception;
@@ -111,14 +113,11 @@ class AcrolinxEndpointTest extends TestCase
         $loop = Factory::create();
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
-        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) use (&$accessToken) {
-            $responseBody = json_decode($response->getBody());
-            // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
-            //    ' | StatusCode: ' . PHP_EOL));
-            $accessToken = $responseBody->data->accessToken;
-        }, function (Exception $reason) {
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$accessToken) {
+            $accessToken = $response->getAccessToken();
+        }, function (AcrolinxServerException $reason) {
             fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
-                ' | StatusCode: ' . PHP_EOL));
+                ' | StatusCode ' . PHP_EOL));
             $this->assertEquals(true, $reason);
         });
         $loop->run();
@@ -134,9 +133,9 @@ class AcrolinxEndpointTest extends TestCase
         $loop = Factory::create();
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
-        $acrolinxEndPoint->signIn($ssoOptions)->then(function (ResponseInterface $response) use (&$reason) {
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$reason) {
             // not needed as we expect an error
-        }, function (Exception $exception) use (&$reason) {
+        }, function (AcrolinxServerException $exception) use (&$reason) {
             // fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
             //    ' | StatusCode: ' . PHP_EOL));
             $reason = $exception->getMessage();
