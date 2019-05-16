@@ -64,7 +64,7 @@ class CheckResult
     /**
      * @return CheckResultReports
      */
-    public function getReports(): CheckResultReports
+    public function getReports(): Report
     {
         return $this->reports;
     }
