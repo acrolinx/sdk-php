@@ -62,7 +62,7 @@ class CheckResult
     }
 
     /**
-     * @return CheckResultReports
+     * @return Report
      */
     public function getReports(): Report
     {
