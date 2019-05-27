@@ -31,6 +31,7 @@ use Acrolinx\SDK\Models\PlatformCapabilities;
 use Acrolinx\SDK\Models\ReportType;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Utils\AcrolinxLogger;
 use Dotenv;
 use Exception;
 use PHPUnit\Framework\TestCase;
@@ -425,6 +426,19 @@ class AcrolinxEndpointTest extends TestCase
         } else {
             fwrite(STDERR, print_r(PHP_EOL . 'No Acrolinx SSO password set' . PHP_EOL));
         }
+
+    }
+
+    public function testLogger()
+    {
+        $logger = AcrolinxLogger::getInstance();
+
+        $logger->logInfo("An Info test");
+        $logger->logDebug('A debug log');
+        $logger->logError('An error log');
+        $logger->logWarning('A warning log');
+
+        self::assertEquals(true, file_exists (  __DIR__ . '/../src/Utils/logs/acrolinx.log'));
 
     }
 }
