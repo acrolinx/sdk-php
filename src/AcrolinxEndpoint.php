@@ -37,7 +37,6 @@ use React\Promise\PromiseInterface;
 class AcrolinxEndpoint
 {
     /**  @var string $serverAddress set the Platform URL to talk to */
-    private $serverAddress = '';
     private $clientLocale = 'en';
     private $props = null;
     private $client;
@@ -69,7 +68,7 @@ class AcrolinxEndpoint
      */
     public function getServerInfo(): PromiseInterface
     {
-        return $this->client->get($this->props->serverAddress . '/api/v1/',
+        return $this->client->get($this->props->platformUrl . '/api/v1/',
             $this->getCommonHeaders(null));
     }
 
@@ -102,7 +101,7 @@ class AcrolinxEndpoint
         $deferred = new Deferred();
 
         $headers = array_merge($this->getSsoRequestHeaders($options), $this->getCommonHeaders(null));
-        $this->client->post($this->props->serverAddress . '/api/v1/auth/sign-ins', $headers)->then(function (ResponseInterface $response)
+        $this->client->post($this->props->platformUrl . '/api/v1/auth/sign-ins', $headers)->then(function (ResponseInterface $response)
         use($deferred){
             $successResponse =  new SignInSuccessData($response);
             $deferred->resolve($successResponse);
@@ -134,7 +133,7 @@ class AcrolinxEndpoint
     {
         $deferred = new Deferred();
 
-        $this->client->get($this->props->serverAddress . '/api/v1/capabilities',
+        $this->client->get($this->props->platformUrl . '/api/v1/capabilities',
             $this->getCommonHeaders($authToken))->then(function (ResponseInterface $response) use ($deferred) {
                 $platformCapabilities = new PlatformCapabilities($response);
                 $deferred->resolve($platformCapabilities);
@@ -156,7 +155,7 @@ class AcrolinxEndpoint
     {
         $deferred = new Deferred();
 
-        $this->client->post($this->props->serverAddress . '/api/v1/checking/checks',
+        $this->client->post($this->props->platformUrl . '/api/v1/checking/checks',
             $this->getCommonHeaders($authToken), $request->getJson())->then(function (ResponseInterface $response)
         use ($deferred) {
             $checkResponse = new CheckResponse($response);
@@ -177,7 +176,7 @@ class AcrolinxEndpoint
     public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
         $deferred = new Deferred();
-        $this->client->get($this->props->serverAddress . '/api/v1/checking/capabilities',
+        $this->client->get($this->props->platformUrl . '/api/v1/checking/capabilities',
             $this->getCommonHeaders($authToken))->then(function (ResponseInterface $response) use ($deferred) {
             $responseBody = json_decode($response->getBody());
             $capabilities =  new CheckingCapabilities($responseBody->data);
@@ -233,7 +232,7 @@ class AcrolinxEndpoint
 
     public function getAcrolinxContentAnalysisDashboard(string $authToken, string $batchId)
     {
-        return $this->client->get($this->props->serverAddress . '/api/v1/checking/' . $batchId . '/contentanalysis',
+        return $this->client->get($this->props->platformUrl . '/api/v1/checking/' . $batchId . '/contentanalysis',
             $this->getCommonHeaders($authToken));
     }
 }

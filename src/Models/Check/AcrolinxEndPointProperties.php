@@ -23,14 +23,14 @@ class AcrolinxEndPointProperties
 {
     public $clientSignature = '';
     public $clientLocale = 'en';
-    public $serverAddress = '';
+    public $platformUrl = '';
     // For proxy
     public $baseUrl = '';
 
-    public function __construct($clientSignature, $serverAddress, $clientLocale, $baseUrl)
+    public function __construct($clientSignature, $platformUrl, $clientLocale, $baseUrl)
     {
         $this->clientLocale = $clientLocale;
-        $this->serverAddress = $serverAddress;
+        $this->platformUrl = rtrim($platformUrl, '/');
         $this->baseUrl = $baseUrl;
         $this->clientSignature = $clientSignature;
     }

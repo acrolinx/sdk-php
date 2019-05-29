@@ -4,6 +4,7 @@
 namespace Acrolinx\SDK\Utils;
 
 
+use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -12,17 +13,21 @@ class AcrolinxLogger
     private static $instance;
     private $logger;
 
-    private function __construct()
+    private function __construct($directory)
     {
         $this->logger = new Logger('acrolinx-logger');
-        //file_put_contents(__DIR__ . '/acrolinx.log', '', FILE_APPEND | LOCK_EX);
-        $this->logger->pushHandler(new StreamHandler(__DIR__ . '/logs/acrolinx.log'), Logger::INFO);
+        $this->logger->pushHandler(new StreamHandler($directory . '/logs/acrolinx.log'), Logger::INFO);
     }
 
-    public static function getInstance(): AcrolinxLogger
+    public static function getInstance($directory): AcrolinxLogger
     {
+        $dir = rtrim($directory, '/');
+        if (!file_exists($dir)) {
+            throw new Exception('Inavalid directory');
+        }
+
         if (!isset(self::$instance)) {
-            self::$instance = new AcrolinxLogger();
+            self::$instance = new AcrolinxLogger($dir);
         }
         return self::$instance;
     }

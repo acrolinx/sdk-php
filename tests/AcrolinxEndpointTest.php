@@ -431,14 +431,14 @@ class AcrolinxEndpointTest extends TestCase
 
     public function testLogger()
     {
-        $logger = AcrolinxLogger::getInstance();
+        $logger = AcrolinxLogger::getInstance(__DIR__);
 
         $logger->logInfo("An Info test");
         $logger->logDebug('A debug log');
         $logger->logError('An error log');
         $logger->logWarning('A warning log');
 
-        self::assertEquals(true, file_exists (  __DIR__ . '/../src/Utils/logs/acrolinx.log'));
+        self::assertEquals(true, file_exists (  __DIR__ . '/logs/acrolinx.log'));
 
     }
 }
