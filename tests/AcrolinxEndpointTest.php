@@ -18,6 +18,7 @@
 
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
+use Acrolinx\SDK\Models\Check\ContentAnalysisDashboardLinks;
 use Acrolinx\SDK\Models\CheckingCapabilities;
 use Acrolinx\SDK\Models\CheckOptions;
 use Acrolinx\SDK\Models\CheckRange;
@@ -333,16 +334,15 @@ class AcrolinxEndpointTest extends TestCase
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
 
         $acrolinxEndPoint->getAcrolinxContentAnalysisDashboard($token, '1')->
-        then(function (ResponseInterface $response) use (&$responseData) {
-            $responseBody = $response->getBody();
-            $checkResult = json_decode($responseBody);
-            $responseData = $checkResult->data;
+        then(function (ContentAnalysisDashboardLinks $response) use (&$responseData) {
+            $responseData = $response->getShortWithAccessToken();
+
         }, function (Exception $reason) {
             fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
                 ' | StatusCode: ' . PHP_EOL));
         });
         $loop->run();
-        $this->assertTrue(isset($responseData->links));
+        $this->assertTrue(isset($responseData));
     }
 
     public static

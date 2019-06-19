@@ -18,6 +18,7 @@
 
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
+use Acrolinx\SDK\Models\Check\ContentAnalysisDashboardLinks;
 use Acrolinx\SDK\Models\CheckingCapabilities;
 use Acrolinx\SDK\Models\CheckRequest;
 use Acrolinx\SDK\Models\CheckResponse;
@@ -232,7 +233,21 @@ class AcrolinxEndpoint
 
     public function getAcrolinxContentAnalysisDashboard(string $authToken, string $batchId)
     {
-        return $this->client->get($this->props->platformUrl . '/api/v1/checking/' . $batchId . '/contentanalysis',
-            $this->getCommonHeaders($authToken));
+        $deferred = new Deferred();
+
+        $this->client->get($this->props->platformUrl . '/api/v1/checking/' . $batchId . '/contentanalysis',
+            $this->getCommonHeaders($authToken))->then(function (ResponseInterface $response) use($deferred){
+
+                $contentAnalysisDashboardLinks = new ContentAnalysisDashboardLinks($response);
+                $deferred->resolve($contentAnalysisDashboardLinks);
+
+        }, function (Exception $reason) use ($deferred){
+            $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(), $reason->getPrevious(),
+                'Unable to fetch Content Analysis Dashboard URL');
+            $deferred->reject($exception);
+        });
+
+        return $deferred->promise();
+
     }
 }
