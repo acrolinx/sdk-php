@@ -35,6 +35,7 @@ use Acrolinx\SDK\Models\SsoSignInOptions;
 use Acrolinx\SDK\Utils\AcrolinxLogger;
 use Dotenv;
 use Exception;
+use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\Factory;
@@ -456,6 +457,23 @@ class AcrolinxEndpointTest extends TestCase
         }
 
         self::assertEquals(false, file_exists (  '/logs/acrolinx.log'));
+
+    }
+
+
+    public function testLoggerLevel()
+    {
+        $logger = AcrolinxLogger::getInstance('./logs/acrolinx.log', Logger::ERROR);
+
+        $logger->info("An Info test");
+        $logger->debug('A debug log');
+        $logger->error('An error log');
+        $logger->warning('A warning log');
+
+        $fileContents = file_get_contents (  './logs/acrolinx.log');
+
+        self::assertContains("An error log", $fileContents);
+        self::assertNotContains('A debug log', $fileContents);
 
     }
 }
