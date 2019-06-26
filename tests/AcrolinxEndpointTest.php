@@ -433,10 +433,10 @@ class AcrolinxEndpointTest extends TestCase
     {
         $logger = AcrolinxLogger::getInstance('./logs/acrolinx.log');
 
-        $logger->logInfo("An Info test");
-        $logger->logDebug('A debug log');
-        $logger->logError('An error log');
-        $logger->logWarning('A warning log');
+        $logger->info("An Info test");
+        $logger->debug('A debug log');
+        $logger->error('An error log');
+        $logger->warning('A warning log');
 
         self::assertEquals(true, file_exists (  './logs/acrolinx.log'));
 
@@ -448,7 +448,7 @@ class AcrolinxEndpointTest extends TestCase
 
         try{
             $logger = AcrolinxLogger::getInstance('/logs/acrolinx.log');
-            $logger->logInfo("An Info test");
+            $logger->info("An Info test");
 
         }catch(Exception $e) {
             $message = $e->getMessage();

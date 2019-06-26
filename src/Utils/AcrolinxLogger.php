@@ -4,65 +4,20 @@
 namespace Acrolinx\SDK\Utils;
 
 
-use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Monolog\Processor\IntrospectionProcessor;
 
 class AcrolinxLogger
 {
-    private static $instance;
-    private $logger;
+    private static $logger;
 
-    private function __construct($file, $level = Logger::INFO)
+    public static function getInstance($file, $level = Logger::INFO): Logger
     {
-
-        $this->logger = new Logger('acrolinx-logger');
-        $this->logger->pushProcessor(new IntrospectionProcessor($level));
-        $this->logger->pushHandler(new StreamHandler($file), $level);
-    }
-
-    public static function getInstance($file): AcrolinxLogger
-    {
-        if (!isset(self::$instance)) {
-
-            self::$instance = new AcrolinxLogger($file);
+        if (!isset(self::$logger)) {
+            self::$logger = new Logger('acrolinx-logger');
+            self::$logger->pushHandler(new StreamHandler($file,Logger::INFO) );
         }
-        return self::$instance;
+        return self::$logger;
     }
 
-    /**
-     * @param string $msg
-     */
-    public function logInfo(string $msg): void
-    {
-        $this->logger->info($msg);
-    }
-
-    /**
-     * @param string $msg
-     */
-    public function logDebug(string $msg): void
-    {
-        $this->logger->debug($msg);
-    }
-
-
-    /**
-     * @param string $msg
-     */
-    public function logWarning(string $msg): void
-    {
-        $this->logger->warning($msg);
-    }
-
-
-    /**
-     * @param string $msg
-     */
-    public function logError(string $msg): void
-    {
-        $this->logger->error($msg);
-
-    }
 }
