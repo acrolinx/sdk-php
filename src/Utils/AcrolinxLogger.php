@@ -7,27 +7,26 @@ namespace Acrolinx\SDK\Utils;
 use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Monolog\Processor\IntrospectionProcessor;
 
 class AcrolinxLogger
 {
     private static $instance;
     private $logger;
 
-    private function __construct($directory)
+    private function __construct($file, $level = Logger::INFO)
     {
+
         $this->logger = new Logger('acrolinx-logger');
-        $this->logger->pushHandler(new StreamHandler($directory . '/logs/acrolinx.log'), Logger::INFO);
+        $this->logger->pushProcessor(new IntrospectionProcessor($level));
+        $this->logger->pushHandler(new StreamHandler($file), $level);
     }
 
-    public static function getInstance($directory): AcrolinxLogger
+    public static function getInstance($file): AcrolinxLogger
     {
-        $dir = rtrim($directory, '/');
-        if (!file_exists($dir)) {
-            throw new Exception('Inavalid directory');
-        }
-
         if (!isset(self::$instance)) {
-            self::$instance = new AcrolinxLogger($dir);
+
+            self::$instance = new AcrolinxLogger($file);
         }
         return self::$instance;
     }
@@ -45,7 +44,7 @@ class AcrolinxLogger
      */
     public function logDebug(string $msg): void
     {
-        $this->logger->info($msg);
+        $this->logger->debug($msg);
     }
 
 
@@ -54,7 +53,7 @@ class AcrolinxLogger
      */
     public function logWarning(string $msg): void
     {
-        $this->logger->info($msg);
+        $this->logger->warning($msg);
     }
 
 
@@ -63,7 +62,7 @@ class AcrolinxLogger
      */
     public function logError(string $msg): void
     {
-        $this->logger->info($msg);
+        $this->logger->error($msg);
 
     }
 }
