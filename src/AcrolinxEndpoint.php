@@ -104,8 +104,17 @@ class AcrolinxEndpoint
         $headers = array_merge($this->getSsoRequestHeaders($options), $this->getCommonHeaders(null));
         $this->client->post($this->props->platformUrl . '/api/v1/auth/sign-ins', $headers)->then(function (ResponseInterface $response)
         use($deferred){
-            $successResponse =  new SignInSuccessData($response);
-            $deferred->resolve($successResponse);
+
+            if($response->getStatusCode() == 200) {
+                $successResponse =  new SignInSuccessData($response);
+                $deferred->resolve($successResponse);
+            }
+            else{
+                $exception =  new AcrolinxServerException('Probably user custom fields are not set.', $response->getStatusCode(),
+                    null, 'SignIn Failed');
+                $deferred->reject($exception);
+            }
+
 
         },function (Exception $reason) use($deferred) {
             $exception =  new AcrolinxServerException($reason->getMessage(), $reason->getCode(),

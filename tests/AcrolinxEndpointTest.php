@@ -121,12 +121,29 @@ class AcrolinxEndpointTest extends TestCase
         $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$accessToken) {
             $accessToken = $response->getAccessToken();
         }, function (AcrolinxServerException $reason) {
-            fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
-                ' | StatusCode ' . PHP_EOL));
             $this->assertEquals(true, $reason);
         });
         $loop->run();
         $this->assertEquals(true, isset($accessToken));
+    }
+
+    public function testSignInWithoutMetadata()
+    {
+        $ssoOptions = new SsoSignInOptions('dummy', $this->acrolinxPassword);
+
+        $reason = null;
+
+        $loop = Factory::create();
+
+        $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$reason) {
+            // not needed as we expect an error
+        }, function (AcrolinxServerException $exception) use (&$reason) {
+            $reason = $exception->getMessage();
+        });
+
+        $loop->run();
+        $this->assertTrue(isset($reason));
     }
 
     public function testSignInError()
@@ -230,14 +247,14 @@ class AcrolinxEndpointTest extends TestCase
             $checkOptions = new CheckOptions();
             $checkOptions->batchId = 1;
             $checkOptions->checkType = CheckType::BASELINE;
-            $checkOptions->contentFormat = 'TEXT';
+            $checkOptions->contentFormat = 'xml';
             $checkOptions->disableCustomFieldValidation = false;
             $checkOptions->reportTypes = array(ReportType::TERMHARVESTING, ReportType::SCORECARD);
             $checkOptions->guidanceProfileId = $guidanceProfileId;
             $checkOptions->languageId = 'en';
-            $checkRequest = new CheckRequest('Simple Test');
+            $checkRequest = new CheckRequest('<xthis is text</x>');
             $checkRequest->checkOptions = $checkOptions;
-            $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
+            $checkRequest->document = new DocumentDescriptorRequest('abc.xml');
             $checkRequest->contentEncoding = ContentEncoding::NONE;
 
             //fwrite(STDERR, print_r(PHP_EOL . 'Content::: '.$checkRequest->content .
@@ -300,8 +317,17 @@ class AcrolinxEndpointTest extends TestCase
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
 
-        $checkRequest = new CheckRequest('Verrry wrooong sentenceee');
-        $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
+        $checkOptions = new CheckOptions();
+        $checkOptions->batchId = 1;
+        $checkOptions->checkType = CheckType::BASELINE;
+        $checkOptions->contentFormat = 'html';
+        $checkOptions->disableCustomFieldValidation = false;
+        $checkOptions->reportTypes = array(ReportType::TERMHARVESTING, ReportType::SCORECARD);
+        $checkOptions->languageId = 'en';
+
+        $checkRequest = new CheckRequest('<x>This is test</x>');
+        $checkRequest->checkOptions = $checkOptions;
+        $checkRequest->document = new DocumentDescriptorRequest('abc.html');
         $checkRequest->contentEncoding = ContentEncoding::NONE;
 
         $acrolinxEndPoint->check($token, $checkRequest)->then(function (CheckResponse $response)
@@ -476,4 +502,5 @@ class AcrolinxEndpointTest extends TestCase
         self::assertNotContains('A debug log', $fileContents);
 
     }
+
 }
