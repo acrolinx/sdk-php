@@ -156,10 +156,7 @@ class AcrolinxEndpointTest extends TestCase
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
         $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$reason) {
-            // not needed as we expect an error
         }, function (AcrolinxServerException $exception) use (&$reason) {
-            // fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
-            //    ' | StatusCode: ' . PHP_EOL));
             $reason = $exception->getMessage();
         });
 
@@ -197,8 +194,6 @@ class AcrolinxEndpointTest extends TestCase
         $acrolinxEndPoint->getCheckingCapabilities($this->acrolinxAuthToken)->
         then(function (CheckingCapabilities $response) use (&$responseBody) {
             $responseBody = $response;
-            // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
-            //    ' | StatusCode: ' . PHP_EOL));
         }, function (Exception $reason) {
             fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
                 ' | StatusCode: ' . PHP_EOL));
@@ -241,9 +236,6 @@ class AcrolinxEndpointTest extends TestCase
         then(function (CheckingCapabilities $response) use (&$checkResponseBody, $token, $acrolinxEndPoint) {
             $guidanceProfileId = $response->getGuidanceProfiles()[0]->getId();
 
-            // fwrite(STDERR, print_r(PHP_EOL . $response->getStatusCode() .
-            //    ' | StatusCode: ' . PHP_EOL));
-
             $checkOptions = new CheckOptions();
             $checkOptions->batchId = 1;
             $checkOptions->checkType = CheckType::BASELINE;
@@ -256,9 +248,6 @@ class AcrolinxEndpointTest extends TestCase
             $checkRequest->checkOptions = $checkOptions;
             $checkRequest->document = new DocumentDescriptorRequest('abc.xml');
             $checkRequest->contentEncoding = ContentEncoding::NONE;
-
-            //fwrite(STDERR, print_r(PHP_EOL . 'Content::: '.$checkRequest->content .
-              //  ' | StatusCode: ' . PHP_EOL));
 
             $acrolinxEndPoint->check($token, $checkRequest)->
             then(function (CheckResponse $response) use (&$checkResponseBody) {

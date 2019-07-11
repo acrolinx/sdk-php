@@ -18,7 +18,7 @@
 
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
-use Acrolinx\SDK\Models\Check\ContentAnalysisDashboardLinks;
+use Acrolinx\SDK\Models\ContentAnalysisDashboardLinks;
 use Acrolinx\SDK\Models\CheckingCapabilities;
 use Acrolinx\SDK\Models\CheckRequest;
 use Acrolinx\SDK\Models\CheckResponse;
@@ -94,6 +94,8 @@ class AcrolinxEndpoint
     }
 
     /**
+     * Sign in to authenticate with an Acrolinx Server.
+     *
      * @param SsoSignInOptions $options
      * @return PromiseInterface
      */
@@ -136,6 +138,8 @@ class AcrolinxEndpoint
     }
 
     /**
+     * Get current servers capabilities
+     *
      * @param string $authToken
      * @return PromiseInterface
      */
@@ -157,6 +161,8 @@ class AcrolinxEndpoint
     }
 
     /**
+     * Submit a check.
+     *
      * @param string $authToken
      * @param CheckRequest $request
      * @return PromiseInterface
@@ -180,6 +186,8 @@ class AcrolinxEndpoint
     }
 
     /**
+     * Get supported options for check.
+     *
      * @param string $authToken
      * @return PromiseInterface
      */
@@ -200,6 +208,13 @@ class AcrolinxEndpoint
         return $deferred->promise();
     }
 
+    /**
+     * Poll for a check result.
+     *
+     * @param string $url
+     * @param string $authToken
+     * @return PromiseInterface
+     */
     public function pollforCheckResult(string $url, string $authToken): PromiseInterface
     {
         $deferred = new Deferred();
@@ -240,6 +255,13 @@ class AcrolinxEndpoint
         return $deferred->promise();
     }
 
+    /**
+     * Get the link to the Acrolinx Content Analysis Dashboard for a batch check.
+     *
+     * @param string $authToken
+     * @param string $batchId
+     * @return \React\Promise\Promise|PromiseInterface
+     */
     public function getAcrolinxContentAnalysisDashboard(string $authToken, string $batchId)
     {
         $deferred = new Deferred();

@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 
-namespace Acrolinx\SDK\Models\Check;
+namespace Acrolinx\SDK\Models;
 
 
 use Psr\Http\Message\ResponseInterface;
