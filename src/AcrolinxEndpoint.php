@@ -68,7 +68,7 @@ class AcrolinxEndpoint
     /**
      * Get server information
      *
-     * @return PromiseInterface containing {@see PlatformInformation} or Exception
+     * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\PlatformInformation} or Exception
      */
     public function getPlatformInformation(): PromiseInterface
     {
@@ -112,7 +112,7 @@ class AcrolinxEndpoint
      * Sign in to authenticate with an Acrolinx Server.
      *
      * @param SsoSignInOptions $options
-     * @return PromiseInterface containing {@see SignInSuccessData} or Exception
+     * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\SignInSuccessData} or Exception
      */
     public function signIn(SsoSignInOptions $options): PromiseInterface
     {
@@ -155,7 +155,7 @@ class AcrolinxEndpoint
      * Get current servers capabilities
      *
      * @param string $authToken
-     * @return PromiseInterface containing {@see PlatformCapabilities} or Exception
+     * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\PlatformCapabilities} or Exception
      */
     public function getCapabilities(string $authToken): PromiseInterface
     {
@@ -179,7 +179,7 @@ class AcrolinxEndpoint
      *
      * @param string $authToken
      * @param CheckRequest $request
-     * @return PromiseInterface containing {@see CheckResponse} or Exception
+     * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\CheckResponse} or Exception
      */
     public function check(string $authToken, CheckRequest $request): PromiseInterface
     {
@@ -203,7 +203,7 @@ class AcrolinxEndpoint
      * Get supported options for check.
      *
      * @param string $authToken
-     * @return PromiseInterface containing {@see CheckCapabilities} or Exception
+     * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\CheckCapabilities} or Exception
      */
     public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
@@ -227,7 +227,7 @@ class AcrolinxEndpoint
      *
      * @param string $url
      * @param string $authToken
-     * @return PromiseInterface containg {@see CheckResult} or Exception
+     * @return PromiseInterface containg {@see \Acrolinx\SDK\Models\CheckResult} or Exception
      */
     public function pollforCheckResult(string $url, string $authToken): PromiseInterface
     {
@@ -274,7 +274,7 @@ class AcrolinxEndpoint
      *
      * @param string $authToken
      * @param string $batchId
-     * @return PromiseInterface containing {@see ContentAnalysisDashboardLinks} or Exception
+     * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\ContentAnalysisDashboardLinks} or Exception
      */
     public function getAcrolinxContentAnalysisDashboard(string $authToken, string $batchId)
     {
