@@ -29,6 +29,7 @@ use Acrolinx\SDK\Models\CheckType;
 use Acrolinx\SDK\Models\ContentEncoding;
 use Acrolinx\SDK\Models\DocumentDescriptorRequest;
 use Acrolinx\SDK\Models\PlatformCapabilities;
+use Acrolinx\SDK\Models\PlatformInformation;
 use Acrolinx\SDK\Models\ReportType;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
@@ -60,18 +61,15 @@ class AcrolinxEndpointTest extends TestCase
     /**
      * Test get server info API
      */
-    public function testGetServerInfo()
+    public function testGetPlatformInformation()
     {
         $loop = Factory::create();
 
         $data = null;
-        $status = null;
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
-        $acrolinxEndPoint->getServerInfo()->then(function (ResponseInterface $response) use (&$data, &$status) {
-            $result = json_decode($response->getBody()->getContents(), true);
-            $data = $result['data'];
-            $status = $response->getStatusCode();
+        $acrolinxEndPoint->getPlatformInformation()->then(function (PlatformInformation $response) use (&$data) {
+            $data = $response;
         }, function (Exception $reason) {
             fwrite(STDERR, print_r(PHP_EOL . var_dump($reason->getMessage()) . PHP_EOL));
         });
@@ -79,8 +77,10 @@ class AcrolinxEndpointTest extends TestCase
         $loop->run();
 
         $this->assertEquals(true, isset($data));
-        $this->assertEquals(200, $status);
-
+        $server = $data->getServer();
+        $this->assertEquals(true, isset($server));
+        $locales = $data->getLocales();
+        $this->assertEquals(true, isset($locales));
     }
 
     /**
@@ -93,7 +93,7 @@ class AcrolinxEndpointTest extends TestCase
             'en', '');
     }
 
-    public function testGetServerInfoError()
+    public function testGetPlatformInformationError()
     {
         $props = new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, 'SomeFakeURL',
             'en', '');
@@ -103,7 +103,7 @@ class AcrolinxEndpointTest extends TestCase
         $loop = Factory::create();
 
         $acrolinxEndPoint = new AcrolinxEndpoint($props, $loop);
-        $acrolinxEndPoint->getServerInfo()->then(function (ResponseInterface $response) use (&$reason) {
+        $acrolinxEndPoint->getPlatformInformation()->then(function (ResponseInterface $response) use (&$reason) {
             // Nothing here as we expect an error
         }, function (Exception $exception) use (&$reason) {
             $reason = $exception->getMessage();
