@@ -1,3 +1,5 @@
+
+
 ### Class: \Acrolinx\SDK\AcrolinxEndpoint
 
 | Visibility | Function |
@@ -10,5 +12,5 @@
 | public | <strong>getPlatformInformation()</strong> : <em>PromiseInterface containing {@see \Acrolinx\SDK\Models\PlatformInformation} or Exception</em><br /><em>Get server information</em> |
 | public | <strong>pollforCheckResult(</strong><em>\string</em> <strong>$url</strong>, <em>\string</em> <strong>$authToken</strong>)</strong> : <em>PromiseInterface containg {@see \Acrolinx\SDK\Models\CheckResult} or Exception</em><br /><em>Poll for a check result.</em> |
 | public | <strong>setClientLocale(</strong><em>mixed</em> <strong>$clientLocale</strong>)</strong> : <em>void</em><br /><em>Sets the language interface.</em> |
-| public | <strong>signIn(</strong><em>\Acrolinx\SDK\Models\SsoSignInOptions</em> <strong>$options</strong>)</strong> : <em>PromiseInterface containing {@see \Acrolinx\SDK\Models\SignInSuccessData} or Exception</em><br /><em>Sign in to authenticate with an Acrolinx Core Platform.</em> |
+| public | <strong>signIn(</strong><em>\Acrolinx\SDK\Models\SsoSignInOptions</em> <strong>$options</strong>)</strong> : <em>PromiseInterface containing {@see \Acrolinx\SDK\Models\SignInSuccessData} or Exception</em><br /><em>Sign in to authenticate with the Acrolinx Core Platform.</em> |
 
