@@ -1,6 +1,6 @@
 # sdk-php
 
-This library is meant to be used to interact with the Acrolinx Platform API from a PHP based application.
+This library is meant to be used to interact with the Acrolinx Platform API in backend integrations.
 It does NOT offer an interface to work with the Acrolinx sidebar.
 
 ## Prerequisites
@@ -17,6 +17,8 @@ Before you start developing your own integration, you might benefit from looking
 
 * [Getting Started with Custom Integrations](https://docs.acrolinx.com/customintegrations),
 * the [Guidance for the Development of Acrolinx Integrations](https://github.com/acrolinx/acrolinx-coding-guidance),
+* the [Acrolinx Platform API](https://github.com/acrolinx/platform-api)
+* the [Rendered Version of Acrolinx Platform API](https://acrolinxapi.docs.apiary.io/#)
 * the [Acrolinx SDKs](https://github.com/acrolinx?q=sdk), and
 * the [Acrolinx Demo Projects](https://github.com/acrolinx?q=demo).
 
