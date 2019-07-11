@@ -109,7 +109,7 @@ class AcrolinxEndpoint
     }
 
     /**
-     * Sign in to authenticate with an Acrolinx Server.
+     * Sign in to authenticate with an Acrolinx Core Platform.
      *
      * @param SsoSignInOptions $options
      * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\SignInSuccessData} or Exception
