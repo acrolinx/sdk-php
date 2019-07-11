@@ -18,7 +18,7 @@
 
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
-use Acrolinx\SDK\Models\Check\ContentAnalysisDashboardLinks;
+use Acrolinx\SDK\Models\ContentAnalysisDashboardLinks;
 use Acrolinx\SDK\Models\CheckingCapabilities;
 use Acrolinx\SDK\Models\CheckOptions;
 use Acrolinx\SDK\Models\CheckRange;
@@ -68,12 +68,8 @@ class AcrolinxEndpointTest extends TestCase
             $result = json_decode($response->getBody()->getContents(), true);
             $data = $result['data'];
             $status = $response->getStatusCode();
-            // fwrite(STDERR, print_r(PHP_EOL . var_dump($response->getStatusCode()) . PHP_EOL));
-
-
         }, function (Exception $reason) {
             fwrite(STDERR, print_r(PHP_EOL . var_dump($reason->getMessage()) . PHP_EOL));
-            // $this->assertEquals(true, $reason);
         });
 
         $loop->run();
@@ -103,7 +99,6 @@ class AcrolinxEndpointTest extends TestCase
             // Nothing here as we expect an error
         }, function (Exception $exception) use (&$reason) {
             $reason = $exception->getMessage();
-            // fwrite(STDERR, print_r(PHP_EOL . var_dump($reason->getMessage()) . PHP_EOL));
         });
         $loop->run();
         $this->assertTrue(isset($reason));
@@ -181,7 +176,6 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        //fwrite(STDERR, print_r($responseBody));
         $this->assertEquals(true, isset($responseBody));
 
     }
