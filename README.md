@@ -3,8 +3,7 @@
 This library is meant to be used to interact with the Acrolinx Platform API in embedded integrations.
 It does NOT offer an interface to work with the Acrolinx Sidebar.
 
-Use [AcrolinxEndpoint](https://github.com/acrolinx/sdk-php/blob/master/src/AcrolinxEndpoint.php) methods to interact with the 
-Acrolinx Platform API.
+Use [AcrolinxEndpoint](api.md) methods to interact with the Acrolinx Platform API.
 
 ## Prerequisites
 
@@ -25,7 +24,13 @@ Before you start developing your own integration, you might benefit from looking
 * the [Acrolinx SDKs](https://github.com/acrolinx?q=sdk), and
 * the [Acrolinx Demo Projects](https://github.com/acrolinx?q=demo).
 
-* the [Documentation on this SDK](api.md)
+## Prerequisites to Develop This Project
+
+* Have php7 installed
+* Have php-curl installed
+* Have composer installed [Find a tutorial here.](https://www.hostinger.com/tutorials/how-to-install-composer)
+
+
 ## Start Developing
 
 * run `composer install` to install dependencies
