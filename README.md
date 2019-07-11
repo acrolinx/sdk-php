@@ -3,6 +3,9 @@
 This library is meant to be used to interact with the Acrolinx Platform API in embedded integrations.
 It does NOT offer an interface to work with the Acrolinx Sidebar.
 
+Use [AcrolinxEndpoint](https://github.com/acrolinx/sdk-php/blob/master/src/AcrolinxEndpoint.php) methods to interact with the 
+Acrolinx Platform API.
+
 ## Prerequisites
 
 Please contact [Acrolinx SDK support](https://github.com/acrolinx/acrolinx-coding-guidance/blob/master/topics/sdk-support.md)
