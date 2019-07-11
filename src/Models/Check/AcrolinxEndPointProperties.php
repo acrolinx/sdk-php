@@ -27,6 +27,13 @@ class AcrolinxEndPointProperties
     // For proxy
     public $baseUrl = '';
 
+    /**
+     * AcrolinxEndPointProperties constructor.
+     * @param $clientSignature Signature of integration
+     * @param $platformUrl Acrolinx Platform URL to connect to
+     * @param $clientLocale Clients locale
+     * @param $baseUrl Proxy base url, can be null
+     */
     public function __construct($clientSignature, $platformUrl, $clientLocale, $baseUrl)
     {
         $this->clientLocale = $clientLocale;

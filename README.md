@@ -1,7 +1,7 @@
-# sdk-php
+# SDK-PHP
 
-This library is meant to be used to interact with the Acrolinx Platform API in backend integrations.
-It does NOT offer an interface to work with the Acrolinx sidebar.
+This library is meant to be used to interact with the Acrolinx Platform API in embedded integrations.
+It does NOT offer an interface to work with the Acrolinx Sidebar.
 
 ## Prerequisites
 
@@ -22,18 +22,18 @@ Before you start developing your own integration, you might benefit from looking
 * the [Acrolinx SDKs](https://github.com/acrolinx?q=sdk), and
 * the [Acrolinx Demo Projects](https://github.com/acrolinx?q=demo).
 
-## Prerequisites to develop this project
+## Prerequisites to Develop This Project
 
 * Have php7 installed
 * Have php-curl installed
 * Have composer installed [Find a tutorial here.](https://www.hostinger.com/tutorials/how-to-install-composer)
 
-## Start developing
+## Start Developing
 
 * run `composer install` to install dependencies
 * run `composer update` to update dependencies
 
-## Run tests
+## Run Tests
 * rename the **.env.conf** file to **.env**
 * set **ACROLINX_TEST_SERVER_URL** and **ACROLINX_ACCESS_TOKEN** in this file
 * run `composer test` to run unit tests

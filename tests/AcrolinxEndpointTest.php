@@ -44,6 +44,10 @@ use React\EventLoop\Factory;
 class AcrolinxEndpointTest extends TestCase
 {
 
+    /**
+     * To run those tests you will have to provide a valid SSO user and password. Set those in the .env file to load them
+     * automatically into the test environment.
+     */
     protected $acrolinxURL;
     protected $acrolinxAuthToken;
     protected $acrolinxSsoUser;
@@ -79,6 +83,10 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
+    /**
+     * Create Properties, that are necessary to connect to an Acrolinx Server.
+     * @return AcrolinxEndPointProperties
+     */
     private function getProps()
     {
         return new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
@@ -105,6 +113,9 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
+    /**
+     * Receive an API Token from Acrolinx Server with single sign by providing single sign on credentials.
+     */
     public function testSignIn()
     {
         $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, $this->acrolinxPassword);
@@ -122,6 +133,9 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(true, isset($accessToken));
     }
 
+    /**
+     * If no user meta data is provided the Acrolinx Platform will return an error.
+     */
     public function testSignInWithoutMetadata()
     {
         $ssoOptions = new SsoSignInOptions('dummy', $this->acrolinxPassword);
@@ -141,6 +155,9 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertTrue(isset($reason));
     }
 
+    /**
+     * If the wrong SSO password is provided the Acrolinx Platform will return an error.
+     */
     public function testSignInError()
     {
         $ssoOptions = new SsoSignInOptions($this->acrolinxSsoUser, 'wrong password');
@@ -159,6 +176,9 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertTrue(isset($reason));
     }
 
+    /**
+     * Receive Acrolinx Platform capabilities.
+     */
     public function testPlatformCapabilities()
     {
         $responseBody = null;
@@ -180,6 +200,9 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
+    /**
+     * Receive the Acrolinx Platforms available options for checking.
+     */
     public function testPlatformCheckingCapabilities()
     {
         $responseBody = null;
@@ -199,8 +222,10 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(true, isset($guidanceProfiles));
     }
 
-    public
-    function testCheckOptionsClass()
+    /**
+     * Create check options.
+     */
+    public function testCheckOptionsClass()
     {
         $checkOptions = new CheckOptions();
         $checkOptions->batchId = 1;
@@ -217,8 +242,10 @@ class AcrolinxEndpointTest extends TestCase
 
     }
 
-    public
-    function testSubmitCheckWithCheckOptions()
+    /**
+     * Submit a check with check options set.
+     */
+    public function testSubmitCheckWithCheckOptions()
     {
         $loop = Factory::create();
         $token = $this->acrolinxAuthToken;
@@ -263,8 +290,10 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(false, empty($checkResponseBody->getId()));
     }
 
-    public
-    function testSubmitCheckWithoutOptions()
+    /**
+     * A check can also be submitted without any check options. The Platform will then apply those.
+     */
+    public function testSubmitCheckWithoutOptions()
     {
         $checkResponseBody = null;
         $token = $this->acrolinxAuthToken;
@@ -289,8 +318,10 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(false, empty($checkResponseBody->getId()));
     }
 
-    public
-    function testSubmitCheckAndPollForResult()
+    /**
+     * To receive a check result we need to poll for the result.
+     */
+    public function testSubmitCheckAndPollForResult()
     {
 
         $token = $this->acrolinxAuthToken;
@@ -335,6 +366,9 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(true, isset($checkScore));
     }
 
+    /**
+     * Retrieve a link tho the Acrolinx Content Analysis Dashboard for a submitted batch check.
+     */
     public function testGetAcrolinxContentAnalysisDashboard()
     {
         $loop = Factory::create();
