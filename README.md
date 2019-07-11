@@ -1,6 +1,6 @@
 # sdk-php
 
-This library is meant to be used to integrate Acrolinx background or batch checks into a PHP based Application.
+This library is meant to be used to interact with the Acrolinx Platform API from a PHP based application.
 It does NOT offer an interface to work with the Acrolinx sidebar.
 
 ## Prerequisites
