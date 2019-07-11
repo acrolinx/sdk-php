@@ -112,7 +112,7 @@ class AcrolinxEndpoint
      * Sign in to authenticate with an Acrolinx Server.
      *
      * @param SsoSignInOptions $options
-     * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\SignInSuccessData} or Exception
+     * @return PromiseInterface containing {@see SignInSuccessData} or Exception
      */
     public function signIn(SsoSignInOptions $options): PromiseInterface
     {
@@ -203,7 +203,7 @@ class AcrolinxEndpoint
      * Get supported options for check.
      *
      * @param string $authToken
-     * @return PromiseInterface
+     * @return PromiseInterface containing {@see CheckCapabilities} or Exception
      */
     public function getCheckingCapabilities(string $authToken): PromiseInterface
     {
@@ -227,7 +227,7 @@ class AcrolinxEndpoint
      *
      * @param string $url
      * @param string $authToken
-     * @return PromiseInterface
+     * @return PromiseInterface containg {@see CheckResult} or Exception
      */
     public function pollforCheckResult(string $url, string $authToken): PromiseInterface
     {
@@ -274,7 +274,7 @@ class AcrolinxEndpoint
      *
      * @param string $authToken
      * @param string $batchId
-     * @return \React\Promise\Promise|PromiseInterface
+     * @return PromiseInterface containing {@see ContentAnalysisDashboardLinks} or Exception
      */
     public function getAcrolinxContentAnalysisDashboard(string $authToken, string $batchId)
     {
