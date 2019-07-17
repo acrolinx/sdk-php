@@ -1,7 +1,7 @@
 # SDK-PHP
 
 This library is meant to be used to interact with the Acrolinx Platform API in embedded integrations.
-It does NOT offer an interface to work with the Acrolinx Sidebar.
+See [Sideabar SDK](https://github.com/acrolinx/sidebar-sdk-js) for Acrolinx Sidebar based integration development
 
 Use [AcrolinxEndpoint](api.md) methods to interact with the Acrolinx Platform API.
 
