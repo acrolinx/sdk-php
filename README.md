@@ -26,7 +26,7 @@ Before you start developing your own integration, you might benefit from looking
 
 ## Prerequisites to Develop This Project
 
-* Have php7 installed
+* Have PHP 7.x installed
 * Have php-curl installed
 * Have composer installed [Find a tutorial here.](https://www.hostinger.com/tutorials/how-to-install-composer)
 
@@ -38,7 +38,7 @@ Before you start developing your own integration, you might benefit from looking
 
 ## Run Tests
 * rename the **.env.conf** file to **.env**
-* set **ACROLINX_TEST_SERVER_URL** and **ACROLINX_ACCESS_TOKEN** in this file
+* set **ACROLINX_TEST_SERVER_URL** and **ACROLINX_ACCESS_TOKEN** in this file. ([Get an access token](https://docs.acrolinx.com/cli/latest/en/how-to/get-an-access-token))
 * run `composer test` to run unit tests
 
 ## License
