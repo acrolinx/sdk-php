@@ -40,7 +40,6 @@ Before you start developing your own integration, you might benefit from looking
 * rename the **.env.conf** file to **.env**
 * set **ACROLINX_TEST_SERVER_URL** and **ACROLINX_ACCESS_TOKEN** in this file
 * run `composer test` to run unit tests
-* DON'T check your personal **.env** file into git
 
 ## License
 
