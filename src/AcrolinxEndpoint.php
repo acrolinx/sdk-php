@@ -92,7 +92,7 @@ class AcrolinxEndpoint
     {
         $headers = [
             'X-Acrolinx-Client' => $this->props->clientSignature,
-            'X-Acrolinx-Base-Url' => $this->props->baseUrl,
+            'X-Acrolinx-Base-Url' => $this->props->platformUrl,
             'Content-Type' => 'application/json'
         ];
 

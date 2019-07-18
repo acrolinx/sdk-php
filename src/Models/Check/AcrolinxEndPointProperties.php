@@ -21,25 +21,25 @@ namespace Acrolinx\SDK\Models;
 
 class AcrolinxEndPointProperties
 {
+
     public $clientSignature = '';
     public $clientLocale = 'en';
     public $platformUrl = '';
-    // For proxy
-    public $baseUrl = '';
+    public $clientVersion = 'unknown';
 
     /**
      * AcrolinxEndPointProperties constructor.
      * @param $clientSignature Signature of integration
      * @param $platformUrl Acrolinx Platform URL to connect to
      * @param $clientLocale Clients locale
-     * @param $baseUrl Proxy base url, can be null
+     * @param $clientVersion Version of host application
      */
-    public function __construct($clientSignature, $platformUrl, $clientLocale, $baseUrl)
+    public function __construct($clientSignature, $platformUrl, $clientLocale, $clientVersion)
     {
+        $this->clientVersion = $clientVersion;
         $this->clientLocale = $clientLocale;
         $this->platformUrl = rtrim($platformUrl, '/');
-        $this->baseUrl = $baseUrl;
-        $this->clientSignature = $clientSignature;
+        $this->clientSignature = $clientSignature . ';' . $this->clientVersion;
     }
 
 }
