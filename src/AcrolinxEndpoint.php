@@ -38,7 +38,6 @@ use React\Promise\PromiseInterface;
 
 class AcrolinxEndpoint
 {
-    /**  @var string $serverAddress set the Platform URL to talk to */
     private $clientLocale = 'en';
     private $props = null;
     private $client;
