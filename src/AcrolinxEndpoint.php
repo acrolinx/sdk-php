@@ -151,7 +151,7 @@ class AcrolinxEndpoint
     }
 
     /**
-     * Get current servers capabilities
+     * Get platform capabilities
      *
      * @param string $authToken
      * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\PlatformCapabilities} or Exception
@@ -240,14 +240,6 @@ class AcrolinxEndpoint
 
             $this->client->get($url, $this->getCommonHeaders($authToken))->then(
                 function (ResponseInterface $response) use ($deferred, &$pollingLoop, &$timer) {
-                    // TODO should we set the new timer interval from response-body (retry after)?
-                    /* {
-                        "progress": {
-                        "percent": 20,
-                        "message": "Waiting in queue",
-                        "retryAfter": "2"
-                        }
-                        }*/
                     if ($response->getStatusCode() == 201) {
                         // ToDo: Notify progress
                         fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . $response->getStatusCode() . PHP_EOL));
