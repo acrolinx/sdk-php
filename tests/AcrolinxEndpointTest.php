@@ -140,19 +140,20 @@ class AcrolinxEndpointTest extends TestCase
     {
         $ssoOptions = new SsoSignInOptions('dummy', $this->acrolinxPassword);
 
-        $reason = null;
+        $accessToken = null;
 
         $loop = Factory::create();
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
-        $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$reason) {
-            // not needed as we expect an error
-        }, function (AcrolinxServerException $exception) use (&$reason) {
+        $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$accessToken) {
+            $accessToken = $response->getAccessToken();
+        }, function (AcrolinxServerException $exception) {
             $reason = $exception->getMessage();
+            $this->assertEquals(true, $reason);
         });
 
         $loop->run();
-        $this->assertTrue(isset($reason));
+        $this->assertTrue(isset($accessToken));
     }
 
     /**
