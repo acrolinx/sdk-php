@@ -34,6 +34,7 @@ use Acrolinx\SDK\Models\ReportType;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Acrolinx\SDK\Utils\AcrolinxLogger;
+use Acrolinx\SDK\Utils\BatchCheckIdGenerator;
 use Dotenv;
 use Exception;
 use Monolog\Logger;
@@ -229,7 +230,7 @@ class AcrolinxEndpointTest extends TestCase
     public function testCheckOptionsClass()
     {
         $checkOptions = new CheckOptions();
-        $checkOptions->batchId = 1;
+        $checkOptions->batchId = BatchCheckIdGenerator::getId('testPHPSDK');;
         $checkOptions->checkType = CheckType::BASELINE;
         $checkOptions->contentFormat = 'XML';
         $checkOptions->disableCustomFieldValidation = false;
@@ -259,7 +260,7 @@ class AcrolinxEndpointTest extends TestCase
             $guidanceProfileId = $response->getGuidanceProfiles()[0]->getId();
 
             $checkOptions = new CheckOptions();
-            $checkOptions->batchId = 1;
+            $checkOptions->batchId = BatchCheckIdGenerator::getId('testPHPSDK');;
             $checkOptions->checkType = CheckType::BASELINE;
             $checkOptions->contentFormat = 'xml';
             $checkOptions->disableCustomFieldValidation = false;
@@ -333,7 +334,7 @@ class AcrolinxEndpointTest extends TestCase
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
 
         $checkOptions = new CheckOptions();
-        $checkOptions->batchId = 1;
+        $checkOptions->batchId = BatchCheckIdGenerator::getId('testPHPSDK');
         $checkOptions->checkType = CheckType::BASELINE;
         $checkOptions->contentFormat = 'html';
         $checkOptions->disableCustomFieldValidation = false;
@@ -394,7 +395,7 @@ class AcrolinxEndpointTest extends TestCase
     function setUpBeforeClass(): void
     {
         if (PHP_SAPI === 'phpdbg' &&
-                strtolower(substr(php_uname('s'), 0, 7)) !== 'windows') {
+            strtolower(substr(php_uname('s'), 0, 7)) !== 'windows') {
             /* Unlike other PHP SAPIs, the phpdbg SAPI does not ignore SIGPIPE
              * [1], thus terminating the phpdbg process [2] when that signal is
              * received.
@@ -483,7 +484,7 @@ class AcrolinxEndpointTest extends TestCase
         $logger->error('An error log');
         $logger->warning('A warning log');
 
-        self::assertEquals(true, file_exists (  './logs/acrolinx.log'));
+        self::assertEquals(true, file_exists('./logs/acrolinx.log'));
 
     }
 
@@ -491,16 +492,16 @@ class AcrolinxEndpointTest extends TestCase
     {
         AcrolinxLogger::getInstance('/logs/acrolinx.log');
 
-        try{
+        try {
             $logger = AcrolinxLogger::getInstance('/logs/acrolinx.log');
             $logger->info("An Info test");
 
-        }catch(Exception $e) {
+        } catch (Exception $e) {
             $message = $e->getMessage();
             self::assertEquals(true, isset($message));
         }
 
-        self::assertEquals(false, file_exists (  '/logs/acrolinx.log'));
+        self::assertEquals(false, file_exists('/logs/acrolinx.log'));
 
     }
 
@@ -514,7 +515,7 @@ class AcrolinxEndpointTest extends TestCase
         $logger->error('An error log');
         $logger->warning('A warning log');
 
-        $fileContents = file_get_contents (  './logs/acrolinx.log');
+        $fileContents = file_get_contents('./logs/acrolinx.log');
 
         self::assertContains("An error log", $fileContents);
         self::assertNotContains('A debug log', $fileContents);
