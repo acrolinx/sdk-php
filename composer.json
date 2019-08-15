@@ -2,7 +2,6 @@
   "name": "acrolinx/sdk",
   "description": "PHP SDK for working with Acrolinx (without Sidebar)",
   "type": "library",
-  "version": "0.0.1",
   "autoload": {
     "psr-4": {
       "Acrolinx\\SDK\\": "src/"
