@@ -10,7 +10,6 @@ class BatchCheckIdGenerator
     public static function getId(String $integrationShortName): String
     {
         $uuid4 = Uuid::uuid4();
-        echo $uuid4->toString();
         if ((!isset($integrationShortName) || trim($integrationShortName) === '')) {
             $name = 'phpSDK';
         } else {
