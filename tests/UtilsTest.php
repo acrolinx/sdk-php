@@ -3,7 +3,7 @@
 use Acrolinx\SDK\Utils\BatchCheckIdGenerator;
 use PHPUnit\Framework\TestCase;
 
-class AcrolinxEndpointTest extends TestCase
+class UtilsTest extends TestCase
 {
     /**
      * Test generate Batch Check UUID
@@ -28,7 +28,7 @@ class AcrolinxEndpointTest extends TestCase
      */
     public function testGetBatchCheckUUIDWithNoInitialValue()
     {
-        $uuid = BatchCheckIdGenerator::getId(null);
+        $uuid = BatchCheckIdGenerator::getId('');
         $this::assertContains('gen.phpSDK.', $uuid);
     }
 
