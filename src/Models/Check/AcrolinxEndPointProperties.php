@@ -39,7 +39,7 @@ class AcrolinxEndPointProperties
         $this->clientVersion = $clientVersion;
         $this->clientLocale = $clientLocale;
         $this->platformUrl = rtrim($platformUrl, '/');
-        $this->clientSignature = $clientSignature . ';' . $this->clientVersion;
+        $this->clientSignature = $clientSignature;
     }
 
 }

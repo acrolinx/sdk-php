@@ -349,7 +349,7 @@ class AcrolinxEndpointTest extends TestCase
         $acrolinxEndPoint->check($token, $checkRequest)->then(function (CheckResponse $response)
         use ($acrolinxEndPoint, $token, &$loop, &$checkScore) {
 
-            $resultUrl = $response->getLinks()['result'];
+            $resultUrl = $response->getPollingUrl();
 
             $acrolinxEndPoint->pollforCheckResult($resultUrl, $token)->
             then(function (CheckResult $response) use (&$checkScore) {

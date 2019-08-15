@@ -19,29 +19,41 @@
 namespace Acrolinx\SDK\Models;
 
 
+use Acrolinx\SDK\Models\Check\PollingURL;
 use Psr\Http\Message\ResponseInterface;
 
 class CheckResponse extends CheckResponseData
 {
-    private $links = array();
+
+    private $pollingUrl;
+    private $cancelLink;
 
 
     public function __construct(ResponseInterface $response)
     {
         parent::__construct($response);
         $responseBody = json_decode($response->getBody());
-        $this->links['result'] = $responseBody->links->result;
-        $this->links['cancel'] = $responseBody->links->cancel;
+        $pollingLink = $responseBody->links->result;
+        $this->pollingUrl = new PollingURL($pollingLink);
+        $this->cancelLink = $responseBody->links->cancel;
     }
-
 
     /**
-     * @return array
+     * @return PollingLink
      */
-    public function getLinks(): array
+    public function getPollingUrl()
     {
-        return $this->links;
+        return $this->pollingUrl;
     }
+
+    /**
+     * @return string
+     */
+    public function getCancelLink()
+    {
+        return $this->cancelLink;
+    }
+
 
 }
 
