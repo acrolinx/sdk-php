@@ -18,6 +18,7 @@
 
 use Acrolinx\SDK\Exceptions\AcrolinxServerException;
 use Acrolinx\SDK\Models\AcrolinxEndPointProperties;
+use Acrolinx\SDK\Models\Check\PollingURL;
 use Acrolinx\SDK\Models\ContentAnalysisDashboardLinks;
 use Acrolinx\SDK\Models\CheckingCapabilities;
 use Acrolinx\SDK\Models\CheckRequest;
@@ -25,6 +26,8 @@ use Acrolinx\SDK\Models\CheckResponse;
 use Acrolinx\SDK\Models\CheckResult;
 use Acrolinx\SDK\Models\PlatformCapabilities;
 use Acrolinx\SDK\Models\PlatformInformation;
+use Acrolinx\SDK\Models\PollingLink;
+use Acrolinx\SDK\Models\Response\ProgressResponse;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
 use Clue\React\Buzz\Browser;
@@ -65,7 +68,7 @@ class AcrolinxEndpoint
     }
 
     /**
-     * Get server information
+     * Get Acrolinx Platform information
      *
      * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\PlatformInformation} or Exception
      */
@@ -90,7 +93,7 @@ class AcrolinxEndpoint
     private function getCommonHeaders($authToken)
     {
         $headers = [
-            'X-Acrolinx-Client' => $this->props->clientSignature,
+            'X-Acrolinx-Client' => $this->props->clientSignature . ';' . $this->props->clientVersion,
             'X-Acrolinx-Base-Url' => $this->props->platformUrl,
             'Content-Type' => 'application/json'
         ];
@@ -101,6 +104,10 @@ class AcrolinxEndpoint
 
         if (!is_null($authToken)) {
             $headers['X-Acrolinx-Auth'] = $authToken;
+        }
+
+        if(isset($_SERVER['HTTP_HOST'])) {
+            $headers['Host'] = $_SERVER['HTTP_HOST'];
         }
 
 
@@ -125,7 +132,7 @@ class AcrolinxEndpoint
                 $successResponse = new SignInSuccessData($response);
                 $deferred->resolve($successResponse);
             } else {
-                $exception = new AcrolinxServerException('Probably user custom fields are not set.', $response->getStatusCode(),
+                $exception = new AcrolinxServerException('Single Sign On failed', $response->getStatusCode(),
                     null, 'SignIn Failed');
                 $deferred->reject($exception);
             }
@@ -166,7 +173,7 @@ class AcrolinxEndpoint
             $deferred->resolve($platformCapabilities);
         }, function (Exception $reason) use ($deferred) {
             $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
-                $reason->getPrevious(), 'Fetching platform capabilities failed');
+                $reason->getPrevious(), 'Fetching Platform capabilities failed');
             $deferred->reject($exception);
         });
 
@@ -228,7 +235,7 @@ class AcrolinxEndpoint
      * @param string $authToken
      * @return PromiseInterface containg {@see \Acrolinx\SDK\Models\CheckResult} or Exception
      */
-    public function pollforCheckResult(string $url, string $authToken): PromiseInterface
+    public function pollForCheckResult(PollingURL $url, string $authToken): PromiseInterface
     {
         $deferred = new Deferred();
         $pollingLoop = $this->loop;
@@ -237,12 +244,13 @@ class AcrolinxEndpoint
         $pollingLoop->addPeriodicTimer(1, function (TimerInterface $timer)
         use ($deferred, &$pollingLoop, &$authToken, &$url) {
 
-
-            $this->client->get($url, $this->getCommonHeaders($authToken))->then(
+            $this->client->get($url->getUrl(), $this->getCommonHeaders($authToken))->then(
                 function (ResponseInterface $response) use ($deferred, &$pollingLoop, &$timer) {
-                    if ($response->getStatusCode() == 201) {
-                        // ToDo: Notify progress
+                    if ($response->getStatusCode() == 202 || $response->getStatusCode() == 201) {
                         fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . $response->getStatusCode() . PHP_EOL));
+                        $progressResponse = new ProgressResponse($response);
+                        sleep($progressResponse->getRetryAfter());
+
                     }
                     if ($response->getStatusCode() == 200) {
                         $checkResult = new CheckResult($response);
