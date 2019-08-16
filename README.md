@@ -1,5 +1,10 @@
 # SDK-PHP
 
+[![Latest Stable Version](https://poser.pugx.org/acrolinx/sdk/v/stable)](https://packagist.org/packages/acrolinx/sdk)
+[![Total Downloads](https://poser.pugx.org/acrolinx/sdk/downloads)](https://packagist.org/packages/acrolinx/sdk)
+[![License](https://poser.pugx.org/acrolinx/sdk/license)](https://packagist.org/packages/acrolinx/sdk)
+[![composer.lock available](https://poser.pugx.org/acrolinx/sdk/composerlock)](https://packagist.org/packages/acrolinx/sdk)
+
 This library is meant to be used to interact with the Acrolinx Platform API in automated integrations.
 See [Sideabar SDK](https://github.com/acrolinx/sidebar-sdk-js) for Acrolinx Sidebar based integration development
 
