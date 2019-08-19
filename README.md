@@ -10,7 +10,7 @@ See [Sideabar SDK](https://github.com/acrolinx/sidebar-sdk-js) for Acrolinx Side
 
 ## Get Started with your Integration
 
-### Prerequisites
+### Prerequisites 
 
 Please contact [Acrolinx SDK support](https://github.com/acrolinx/acrolinx-coding-guidance/blob/master/topics/sdk-support.md)
 for consulting and getting your integration certified.
