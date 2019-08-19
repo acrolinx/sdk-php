@@ -1,4 +1,4 @@
-# SDK-PHP
+# SDK-PHP [![Build Status](https://travis-ci.org/acrolinx/sdk-php.svg?branch=master)](https://travis-ci.org/acrolinx/sdk-php)
 
 [![Latest Stable Version](https://poser.pugx.org/acrolinx/sdk/v/stable)](https://packagist.org/packages/acrolinx/sdk)
 [![Total Downloads](https://poser.pugx.org/acrolinx/sdk/downloads)](https://packagist.org/packages/acrolinx/sdk)
