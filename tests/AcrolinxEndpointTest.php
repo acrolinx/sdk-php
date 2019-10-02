@@ -147,6 +147,7 @@ class AcrolinxEndpointTest extends TestCase
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
         $acrolinxEndPoint->signIn($ssoOptions)->then(function (SignInSuccessData $response) use (&$accessToken) {
+
             $accessToken = $response->getAccessToken();
         }, function (AcrolinxServerException $exception) {
             $reason = $exception->getMessage();
@@ -154,7 +155,7 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        $this->assertTrue(isset($accessToken));
+        $this->assertFalse(isset($accessToken));
     }
 
     /**
