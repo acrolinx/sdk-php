@@ -134,6 +134,7 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(true, isset($accessToken));
     }
 
+
     /**
      * If no user meta data is provided the Acrolinx Platform will return an error.
      */
@@ -155,8 +156,9 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        $this->assertFalse(isset($accessToken));
+        $this->assertNull($accessToken);
     }
+
 
     /**
      * If the wrong SSO password is provided the Acrolinx Platform will return an error.
