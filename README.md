@@ -6,11 +6,11 @@
 [![composer.lock available](https://poser.pugx.org/acrolinx/sdk/composerlock)](https://packagist.org/packages/acrolinx/sdk)
 
 This library is meant to be used to interact with the Acrolinx Platform API in automated integrations.
-See [Sideabar SDK](https://github.com/acrolinx/sidebar-sdk-js) for Acrolinx Sidebar based integration development
+See [Sidebar SDK](https://github.com/acrolinx/sidebar-sdk-js) for Acrolinx Sidebar based integration development.
 
-## Get Started with your Integration
+## Get Started with Your Integration
 
-### Prerequisites 
+### Prerequisites
 
 Please contact [Acrolinx SDK support](https://github.com/acrolinx/acrolinx-coding-guidance/blob/master/topics/sdk-support.md)
 for consulting and getting your integration certified.
@@ -31,13 +31,13 @@ Before you start developing your own integration, you might benefit from looking
 
 ### Start Developing
 
-`composer require acrolinx/sdk` 
+`composer require acrolinx/sdk`
 
 Use [AcrolinxEndpoint](api.md) methods to interact with the Acrolinx Platform API.
 
 Our [tests](tests/AcrolinxEndpointTest.php) cover a lot of use cases already. Use them for inspiration.
 
-## Contributing to this SDK 
+## Contributing to This SDK
 
 ### Prerequisites
 
@@ -45,15 +45,15 @@ Our [tests](tests/AcrolinxEndpointTest.php) cover a lot of use cases already. Us
 * Have php-curl installed
 * Have composer installed [Find a tutorial here.](https://www.hostinger.com/tutorials/how-to-install-composer)
 
-
 ### Start Developing
 
 * run `composer install` to install dependencies
 * run `composer update` to update dependencies
 
 ### Run Tests
-* rename the **.env.conf** file to **.env**
-* set **ACROLINX_TEST_SERVER_URL** and **ACROLINX_ACCESS_TOKEN** in this file. ([Get an access token](https://docs.acrolinx.com/cli/latest/en/how-to/get-an-access-token))
+
+* rename the `.env.conf`file to `.env`
+* set `ACROLINX_TEST_SERVER_URL` and `ACROLINX_ACCESS_TOKEN` in this file. ([Get an access token](https://docs.acrolinx.com/cli/latest/en/how-to/get-an-access-token))
 * run `composer test` to run unit tests
 
 ## License
