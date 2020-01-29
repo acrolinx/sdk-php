@@ -6,7 +6,6 @@
 [![composer.lock available](https://poser.pugx.org/acrolinx/sdk/composerlock)](https://packagist.org/packages/acrolinx/sdk)
 
 This library is meant to be used to interact with the Acrolinx Platform API in automated integrations.
-See [Sidebar SDK](https://github.com/acrolinx/sidebar-sdk-js) for Acrolinx Sidebar based integration development.
 
 ## Get Started with Your Integration
 
