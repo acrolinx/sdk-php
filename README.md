@@ -24,7 +24,7 @@ Before you start developing your own integration, you might benefit from looking
 * [Getting Started with Custom Integrations](https://docs.acrolinx.com/customintegrations),
 * the [Guidance for the Development of Acrolinx Integrations](https://github.com/acrolinx/acrolinx-coding-guidance),
 * the [Acrolinx Platform API](https://github.com/acrolinx/platform-api)
-* the [Rendered Version of Acrolinx Platform API](https://acrolinxapi.docs.apiary.io/#)
+* the [Rendered Version of the Acrolinx Platform API](https://acrolinxapi.docs.apiary.io/#)
 * the [Acrolinx SDKs](https://github.com/acrolinx?q=sdk), and
 * the [Acrolinx Demo Projects](https://github.com/acrolinx?q=demo).
 
@@ -32,7 +32,7 @@ Before you start developing your own integration, you might benefit from looking
 
 `composer require acrolinx/sdk`
 
-Use [AcrolinxEndpoint](api.md) methods to interact with the Acrolinx Platform API.
+Use the [`AcrolinxEndpoint`](api.md) methods to interact with the Acrolinx Platform API.
 
 Our [tests](tests/AcrolinxEndpointTest.php) cover a lot of use cases already. Use them for inspiration.
 
