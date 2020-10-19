@@ -277,7 +277,7 @@ class AcrolinxEndpointTest extends TestCase
             $checkOptions->reportTypes = array(ReportType::TERMHARVESTING, ReportType::SCORECARD);
             $checkOptions->guidanceProfileId = $guidanceProfileId;
             $checkOptions->languageId = 'en';
-            $checkRequest = new CheckRequest('<xthis is text</x>');
+            $checkRequest = new CheckRequest('<x>this is text</x>');
             $checkRequest->checkOptions = $checkOptions;
             $checkRequest->document = new DocumentDescriptorRequest('abc.xml');
             $checkRequest->contentEncoding = ContentEncoding::NONE;
