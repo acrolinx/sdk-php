@@ -59,6 +59,48 @@ class AcrolinxEndpointTest extends TestCase
     // See: https://support.acrolinx.com/hc/en-us/articles/205687652-Getting-Started-with-Custom-Integrations
     protected $DEVELOPMENT_SIGNATURE = 'SW50ZWdyYXRpb25EZXZlbG9wbWVudERlbW9Pbmx5';
 
+    public static
+    function setUpBeforeClass(): void
+    {
+        if (PHP_SAPI === 'phpdbg' &&
+            strtolower(substr(php_uname('s'), 0, 7)) !== 'windows') {
+            /* Unlike other PHP SAPIs, the phpdbg SAPI does not ignore SIGPIPE
+             * [1], thus terminating the phpdbg process [2] when that signal is
+             * received.
+             *
+             * This becomes an issue when a write to a socket whose "reading
+             * end" is closed occurs: SIGPIPE is raised [3] and kills the
+             * process.
+             *
+             * That particular scenario occurs when using TLS/SSL connections
+             * with the "react/socket" PHP library, which is used by the REST
+             * client that we use, "clue/buzz-react".
+             *
+             * "react/socket" calls shutdown(..., SHUT_RDWR) on a socket before
+             * closing it [4], which disallows further reads and writes to the
+             * socket [5]. Unfortunately, later, OpenSSL presumably tries to
+             * send a "close notify" message to the peer [6] when the socket
+             * actually gets closed for good -- which fails due to the socket
+             * being shutdown, thus raising SIGPIPE and killing the process.
+             *
+             * To work around this, we ignore SIGPIPE. This should be safe
+             * since write()s to a socket that would raise SIGPIPE will instead
+             * fail with EPIPE if SIGPIPE is ignored [3].
+             *
+             * [1] See e.g.:
+             *     https://chat.stackoverflow.com/transcript/message/37915372#37915372
+             *     and
+             *     https://github.com/amphp/byte-stream/blob/d5cd42a76516f91672143fa5662df2fdaa4ebe57/test/ResourceStreamTest.php#L74
+             * [2] https://manpages.debian.org/stretch/manpages/signal.7.en.html#Standard_signals
+             * [3] https://manpages.debian.org/stretch/manpages-dev/write.2.en.html#ERRORS
+             * [4] https://github.com/reactphp/socket/blob/23b7372bb25cea934f6124f5bdac34e30161959e/src/Connection.php#L122
+             * [5] https://manpages.debian.org/stretch/manpages-dev/shutdown.2.en.html
+             * [6] https://www.openssl.org/docs/man1.0.2/man3/SSL_shutdown.html
+             */
+            pcntl_signal(SIGPIPE, SIG_IGN);
+        }
+    }
+
     /**
      * Test get server info API
      */
@@ -134,7 +176,6 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertEquals(true, isset($accessToken));
     }
 
-
     /**
      * This test could yield positive or negative results.
      * There is no evident significance attached with the result. Only used for debugging purpose.
@@ -158,14 +199,12 @@ class AcrolinxEndpointTest extends TestCase
         });
 
         $loop->run();
-        if(isset($accessToken)) {
+        if (isset($accessToken)) {
             self::assertTrue(isset($accessToken));
-        }
-        else {
+        } else {
             self::assertTrue(!isset($accessToken));
         }
     }
-
 
     /**
      * If the wrong SSO password is provided the Acrolinx Platform will return an error.
@@ -240,7 +279,7 @@ class AcrolinxEndpointTest extends TestCase
     public function testCheckOptionsClass()
     {
         $checkOptions = new CheckOptions();
-        $checkOptions->batchId = BatchCheckIdGenerator::getId('testPHPSDK');;
+        $checkOptions->batchId = BatchCheckIdGenerator::getId('testPHPSDK');
         $checkOptions->checkType = CheckType::BASELINE;
         $checkOptions->contentFormat = 'XML';
         $checkOptions->disableCustomFieldValidation = false;
@@ -262,15 +301,16 @@ class AcrolinxEndpointTest extends TestCase
         $loop = Factory::create();
         $token = $this->acrolinxAuthToken;
         $checkResponseBody = null;
+        $checkScore = null;
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
 
         $acrolinxEndPoint->getCheckingCapabilities($token)->
-        then(function (CheckingCapabilities $response) use (&$checkResponseBody, $token, $acrolinxEndPoint) {
+        then(function (CheckingCapabilities $response) use (&$checkResponseBody, $token, $acrolinxEndPoint, &$checkScore) {
             $guidanceProfileId = $response->getGuidanceProfiles()[0]->getId();
 
             $checkOptions = new CheckOptions();
-            $checkOptions->batchId = BatchCheckIdGenerator::getId('testPHPSDK');;
+            $checkOptions->batchId = BatchCheckIdGenerator::getId('testPHPSDK');
             $checkOptions->checkType = CheckType::BASELINE;
             $checkOptions->contentFormat = 'xml';
             $checkOptions->disableCustomFieldValidation = false;
@@ -283,8 +323,17 @@ class AcrolinxEndpointTest extends TestCase
             $checkRequest->contentEncoding = ContentEncoding::NONE;
 
             $acrolinxEndPoint->check($token, $checkRequest)->
-            then(function (CheckResponse $response) use (&$checkResponseBody) {
+            then(function (CheckResponse $response) use ($acrolinxEndPoint, $token, &$checkResponseBody, &$checkScore) {
                 $checkResponseBody = $response;
+                $resultUrl = $response->getPollingUrl();
+                $acrolinxEndPoint->pollforCheckResult($resultUrl, $token)->
+                then(function (CheckResult $response) use (&$checkScore) {
+
+                    $checkScore = $response->getQuality()->getScore();
+                }, function (Exception $reason) {
+                    fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
+                        ' | StatusCode: ' . PHP_EOL));
+                });
             }, function (Exception $reason) {
                 fwrite(STDERR, print_r(PHP_EOL . $reason->getMessage() .
                     ' | StatusCode: ' . PHP_EOL));
@@ -300,6 +349,7 @@ class AcrolinxEndpointTest extends TestCase
 
         $loop->run();
         $this->assertEquals(false, empty($checkResponseBody->getId()));
+        $this->assertEquals(true, isset($checkScore));
     }
 
     /**
@@ -401,46 +451,50 @@ class AcrolinxEndpointTest extends TestCase
         $this->assertTrue(isset($responseData));
     }
 
-    public static
-    function setUpBeforeClass(): void
+    public function testLogger()
     {
-        if (PHP_SAPI === 'phpdbg' &&
-            strtolower(substr(php_uname('s'), 0, 7)) !== 'windows') {
-            /* Unlike other PHP SAPIs, the phpdbg SAPI does not ignore SIGPIPE
-             * [1], thus terminating the phpdbg process [2] when that signal is
-             * received.
-             *
-             * This becomes an issue when a write to a socket whose "reading
-             * end" is closed occurs: SIGPIPE is raised [3] and kills the
-             * process.
-             *
-             * That particular scenario occurs when using TLS/SSL connections
-             * with the "react/socket" PHP library, which is used by the REST
-             * client that we use, "clue/buzz-react".
-             *
-             * "react/socket" calls shutdown(..., SHUT_RDWR) on a socket before
-             * closing it [4], which disallows further reads and writes to the
-             * socket [5]. Unfortunately, later, OpenSSL presumably tries to
-             * send a "close notify" message to the peer [6] when the socket
-             * actually gets closed for good -- which fails due to the socket
-             * being shutdown, thus raising SIGPIPE and killing the process.
-             *
-             * To work around this, we ignore SIGPIPE. This should be safe
-             * since write()s to a socket that would raise SIGPIPE will instead
-             * fail with EPIPE if SIGPIPE is ignored [3].
-             *
-             * [1] See e.g.:
-             *     https://chat.stackoverflow.com/transcript/message/37915372#37915372
-             *     and
-             *     https://github.com/amphp/byte-stream/blob/d5cd42a76516f91672143fa5662df2fdaa4ebe57/test/ResourceStreamTest.php#L74
-             * [2] https://manpages.debian.org/stretch/manpages/signal.7.en.html#Standard_signals
-             * [3] https://manpages.debian.org/stretch/manpages-dev/write.2.en.html#ERRORS
-             * [4] https://github.com/reactphp/socket/blob/23b7372bb25cea934f6124f5bdac34e30161959e/src/Connection.php#L122
-             * [5] https://manpages.debian.org/stretch/manpages-dev/shutdown.2.en.html
-             * [6] https://www.openssl.org/docs/man1.0.2/man3/SSL_shutdown.html
-             */
-            pcntl_signal(SIGPIPE, SIG_IGN);
+        $logger = AcrolinxLogger::getInstance('./logs/acrolinx.log');
+
+        $logger->info("An Info test");
+        $logger->debug('A debug log');
+        $logger->error('An error log');
+        $logger->warning('A warning log');
+
+        self::assertEquals(true, file_exists('./logs/acrolinx.log'));
+
+    }
+
+    public function testLoggerAccessDenied()
+    {
+        AcrolinxLogger::getInstance('/logs/acrolinx.log');
+
+        try {
+            $logger = AcrolinxLogger::getInstance('/logs/acrolinx.log');
+            $logger->info("An Info test");
+
+        } catch (Exception $e) {
+            $message = $e->getMessage();
+            self::assertEquals(true, isset($message));
         }
+
+        self::assertEquals(false, file_exists('/logs/acrolinx.log'));
+
+    }
+
+    public function testLoggerLevel()
+    {
+        $logger = AcrolinxLogger::getInstance('./logs/acrolinx.log', Logger::ERROR);
+
+        $logger->info("An Info test");
+        $logger->debug('A debug log');
+        $logger->error('An error log');
+        $logger->warning('A warning log');
+
+        $fileContents = file_get_contents('./logs/acrolinx.log');
+
+        self::assertContains("An error log", $fileContents);
+        self::assertNotContains('A debug log', $fileContents);
+
     }
 
     protected
@@ -482,53 +536,6 @@ class AcrolinxEndpointTest extends TestCase
         } else {
             fwrite(STDERR, print_r(PHP_EOL . 'No Acrolinx SSO password set' . PHP_EOL));
         }
-
-    }
-
-    public function testLogger()
-    {
-        $logger = AcrolinxLogger::getInstance('./logs/acrolinx.log');
-
-        $logger->info("An Info test");
-        $logger->debug('A debug log');
-        $logger->error('An error log');
-        $logger->warning('A warning log');
-
-        self::assertEquals(true, file_exists('./logs/acrolinx.log'));
-
-    }
-
-    public function testLoggerAccessDenied()
-    {
-        AcrolinxLogger::getInstance('/logs/acrolinx.log');
-
-        try {
-            $logger = AcrolinxLogger::getInstance('/logs/acrolinx.log');
-            $logger->info("An Info test");
-
-        } catch (Exception $e) {
-            $message = $e->getMessage();
-            self::assertEquals(true, isset($message));
-        }
-
-        self::assertEquals(false, file_exists('/logs/acrolinx.log'));
-
-    }
-
-
-    public function testLoggerLevel()
-    {
-        $logger = AcrolinxLogger::getInstance('./logs/acrolinx.log', Logger::ERROR);
-
-        $logger->info("An Info test");
-        $logger->debug('A debug log');
-        $logger->error('An error log');
-        $logger->warning('A warning log');
-
-        $fileContents = file_get_contents('./logs/acrolinx.log');
-
-        self::assertContains("An error log", $fileContents);
-        self::assertNotContains('A debug log', $fileContents);
 
     }
 
