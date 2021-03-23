@@ -25,5 +25,6 @@ class ReportType extends Enum
     const TERMHARVESTING = 'termHarvesting';
     const SCORECARD = 'scorecard';
     const EXTRACTEDTEXT = 'extractedText';
-    const REQUESTTEXT = 'extractedText';
+    const LINGUISTICDEBUGINFO = 'linguisticDebugInfo';
+    const CONTENTANALYSISDASHBOARD = 'contentAnalysisDashboard';
 }
