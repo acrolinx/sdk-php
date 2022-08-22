@@ -362,7 +362,6 @@ class AcrolinxEndpointTest extends TestCase
         $loop = Factory::create();
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
-
         $checkRequest = new CheckRequest('Simple Test');
         $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
         $checkRequest->contentEncoding = ContentEncoding::NONE;
@@ -491,9 +490,8 @@ class AcrolinxEndpointTest extends TestCase
         $logger->warning('A warning log');
 
         $fileContents = file_get_contents('./logs/acrolinx.log');
-
-        self::assertContains("An error log", $fileContents);
-        self::assertNotContains('A debug log', $fileContents);
+        self::assertStringContainsString("An error log", $fileContents);
+        self::assertStringNotContainsString('A debug log', $fileContents);
 
     }
 

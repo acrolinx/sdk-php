@@ -11,7 +11,7 @@ class UtilsTest extends TestCase
     public function testGetBatchCheckUUID()
     {
         $uuid = BatchCheckIdGenerator::getId('test');
-        $this::assertContains('gen.test.', $uuid);
+        $this::assertStringContainsString('gen.test.', $uuid);
     }
 
     /**
@@ -20,7 +20,7 @@ class UtilsTest extends TestCase
     public function testGetBatchCheckUUIDWithSpace()
     {
         $uuid = BatchCheckIdGenerator::getId(' ');
-        $this::assertContains('gen.phpSDK.', $uuid);
+        $this::assertStringContainsString('gen.phpSDK.', $uuid);
     }
 
     /**
@@ -29,7 +29,7 @@ class UtilsTest extends TestCase
     public function testGetBatchCheckUUIDWithNoInitialValue()
     {
         $uuid = BatchCheckIdGenerator::getId('');
-        $this::assertContains('gen.phpSDK.', $uuid);
+        $this::assertStringContainsString('gen.phpSDK.', $uuid);
     }
 
     /**
@@ -38,6 +38,6 @@ class UtilsTest extends TestCase
     public function testGetBatchCheckUUIDWithWhiteSpace()
     {
         $uuid = BatchCheckIdGenerator::getId('Acrolinx for PHP');
-        $this::assertContains('gen.Acrolinx-for-PHP.', $uuid);
+        $this::assertStringContainsString('gen.Acrolinx-for-PHP.', $uuid);
     }
 }
