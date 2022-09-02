@@ -57,8 +57,11 @@ class AcrolinxEndpointTest extends TestCase
 
     // You'll get the clientSignature for your integration after a successful certification meeting.
     // See: https://support.acrolinx.com/hc/en-us/articles/205687652-Getting-Started-with-Custom-Integrations
-    protected $DEVELOPMENT_SIGNATURE = 'SW50ZWdyYXRpb25EZXZlbG9wbWVudERlbW9Pbmx5';
+    protected $DEVELOPMENT_SIGNATURE;
 
+    function __construct() {
+        $this->DEVELOPMENT_SIGNATURE = getenv('ACROLINX_DEV_SIGNATURE');
+    }
     public static
     function setUpBeforeClass(): void
     {
