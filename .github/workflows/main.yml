@@ -1,0 +1,29 @@
+name: CI SDK PHP
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      ACROLINX_ACCESS_TOKEN: ${{ secrets.ACROLINX_ACCESS_TOKEN }}
+      ACROLINX_TEST_SERVER_URL: ${{ secrets.ACROLINX_TEST_SERVER_URL }}
+      ACROLINX_SSO_USER: ${{ secrets.ACROLINX_SSO_USER }}
+      ACROLINX_SSO_PASSWORD: ${{ secrets.ACROLINX_SSO_PASSWORD }}
+      ACROLINX_DEV_SIGNATURE: ${{ secrets.ACROLINX_DEV_SIGNATURE }}
+
+    steps:
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          registry-url: 'https://registry.npmjs.org'
+      - run: composer install
+      - run: composer update
+      - run: composer test
+
