@@ -42,7 +42,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\Factory;
 
-
 class AcrolinxEndpointTest extends TestCase
 {
 
@@ -57,11 +56,7 @@ class AcrolinxEndpointTest extends TestCase
 
     // You'll get the clientSignature for your integration after a successful certification meeting.
     // See: https://support.acrolinx.com/hc/en-us/articles/205687652-Getting-Started-with-Custom-Integrations
-    protected $DEVELOPMENT_SIGNATURE;
-
-    function __construct() {
-        $this->DEVELOPMENT_SIGNATURE = getenv('ACROLINX_DEV_SIGNATURE');
-    }
+    // $DEVELOPMENT_SIGNATURE was removed because we are using an environment variable now.
     public static
     function setUpBeforeClass(): void
     {
@@ -135,13 +130,13 @@ class AcrolinxEndpointTest extends TestCase
      */
     private function getProps()
     {
-        return new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+        return new AcrolinxEndPointProperties(getenv('ACROLINX_DEV_SIGNATURE'), $this->acrolinxURL,
             'en', '');
     }
 
     public function testGetPlatformInformationError()
     {
-        $props = new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, 'SomeFakeURL',
+        $props = new AcrolinxEndPointProperties(getenv('ACROLINX_DEV_SIGNATURE'), 'SomeFakeURL',
             'en', '');
 
         $reason = null;
