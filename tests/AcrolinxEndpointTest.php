@@ -42,7 +42,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\Factory;
 
-
 class AcrolinxEndpointTest extends TestCase
 {
 
@@ -57,8 +56,7 @@ class AcrolinxEndpointTest extends TestCase
 
     // You'll get the clientSignature for your integration after a successful certification meeting.
     // See: https://support.acrolinx.com/hc/en-us/articles/205687652-Getting-Started-with-Custom-Integrations
-    protected $DEVELOPMENT_SIGNATURE = 'SW50ZWdyYXRpb25EZXZlbG9wbWVudERlbW9Pbmx5';
-
+    // $DEVELOPMENT_SIGNATURE was removed because we are using an environment variable now.
     public static
     function setUpBeforeClass(): void
     {
@@ -132,13 +130,13 @@ class AcrolinxEndpointTest extends TestCase
      */
     private function getProps()
     {
-        return new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, $this->acrolinxURL,
+        return new AcrolinxEndPointProperties(getenv('ACROLINX_DEV_SIGNATURE'), $this->acrolinxURL,
             'en', '');
     }
 
     public function testGetPlatformInformationError()
     {
-        $props = new AcrolinxEndPointProperties($this->DEVELOPMENT_SIGNATURE, 'SomeFakeURL',
+        $props = new AcrolinxEndPointProperties(getenv('ACROLINX_DEV_SIGNATURE'), 'SomeFakeURL',
             'en', '');
 
         $reason = null;
@@ -362,7 +360,6 @@ class AcrolinxEndpointTest extends TestCase
         $loop = Factory::create();
 
         $acrolinxEndPoint = new AcrolinxEndpoint($this->getProps(), $loop);
-
         $checkRequest = new CheckRequest('Simple Test');
         $checkRequest->document = new DocumentDescriptorRequest('abc.txt');
         $checkRequest->contentEncoding = ContentEncoding::NONE;
@@ -491,9 +488,8 @@ class AcrolinxEndpointTest extends TestCase
         $logger->warning('A warning log');
 
         $fileContents = file_get_contents('./logs/acrolinx.log');
-
-        self::assertContains("An error log", $fileContents);
-        self::assertNotContains('A debug log', $fileContents);
+        self::assertStringContainsString("An error log", $fileContents);
+        self::assertStringNotContainsString('A debug log', $fileContents);
 
     }
 
