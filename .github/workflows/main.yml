@@ -23,7 +23,6 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-          registry-url: 'https://registry.npmjs.org'
       - run: composer install
       - run: composer update
       - run: composer test
