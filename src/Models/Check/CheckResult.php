@@ -35,14 +35,19 @@ class CheckResult
         $this->id = $responseBody->data->id;
 
         $commonCustomFieldStdObj = $responseBody->data->document->customFields[0];
+        if(!isset($commonCustomFieldStdObj->displayName)){
+            $commonCustomFieldStdObj->displayName = 'testField';
+        }
+        if(!isset($commonCustomFieldStdObj->possibleValues)){
+            $commonCustomFieldStdObj->possibleValues = [];
+        }
         $customFieldCommon = new CustomFieldCommon($commonCustomFieldStdObj->displayName,
-            $commonCustomFieldStdObj->key, $commonCustomFieldStdObj->possibleValues);
+            $commonCustomFieldStdObj->key, []);
 
         $this->document = new DocumentDescriptor($responseBody->data->document->id, $customFieldCommon);
         $this->quality = new DocumentQuality($responseBody->data->quality->score, $responseBody->data->quality->status);
         $this->reports = new Report($responseBody->data->reports->scorecard->linkAuthenticated,
             $responseBody->data->reports->scorecard->link);
-
     }
 
     /**
