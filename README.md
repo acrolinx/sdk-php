@@ -40,7 +40,7 @@ Our [tests](tests/AcrolinxEndpointTest.php) cover a lot of use cases already. Us
 
 ### Prerequisites
 
-* Have PHP 7.4 or above installed
+* Have PHP 8.0 or above installed
 * Have php-curl installed
 * Have composer installed [Find a tutorial here.](https://www.hostinger.com/tutorials/how-to-install-composer)
 
