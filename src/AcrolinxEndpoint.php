@@ -242,7 +242,6 @@ class AcrolinxEndpoint
                 function (ResponseInterface $response) use ($deferred, &$pollingLoop, &$timer) {
 
                     if ($response->getStatusCode() == 202 || $response->getStatusCode() == 201) {
-                        //fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . $response->getStatusCode() . PHP_EOL));
                         $progressResponse = new ProgressResponse($response);
                         sleep($progressResponse->getRetryAfter());
 
@@ -255,8 +254,8 @@ class AcrolinxEndpoint
                 }, function (Exception $reason) use ($deferred, &$pollingLoop, &$timer) {
                 $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(), $reason->getPrevious(),
                     'Unable to fetch check result');
-                $pollingLoop->cancelTimer($timer);
                 $deferred->reject($exception);
+                $pollingLoop->cancelTimer($timer);
 
             });
         });
