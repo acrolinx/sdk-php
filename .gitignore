@@ -3,3 +3,6 @@
 vendor
 tmp
 /sonar-project.properties
+logs/acrolinx.log
+.phpunit.result.cache
+tests/logs/acrolinx.log

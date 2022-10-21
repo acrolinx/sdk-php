@@ -383,6 +383,8 @@ class AcrolinxEndpointTest extends TestCase
     public function testSubmitCheckAndPollForResult()
     {
 
+        $logger = AcrolinxLogger::getInstance('./logs/acrolinx.log', Logger::INFO);
+
         $token = $this->acrolinxAuthToken;
         $checkScore = null;
 
@@ -404,12 +406,14 @@ class AcrolinxEndpointTest extends TestCase
         $checkRequest->contentEncoding = ContentEncoding::NONE;
 
         $acrolinxEndPoint->check($token, $checkRequest)->then(function (CheckResponse $response)
-        use ($acrolinxEndPoint, $token, &$loop, &$checkScore) {
+        use ($acrolinxEndPoint, $token, $logger, &$loop, &$checkScore) {
 
             $resultUrl = $response->getPollingUrl();
 
             $acrolinxEndPoint->pollforCheckResult($resultUrl, $token)->
-            then(function (CheckResult $response) use (&$checkScore) {
+            then(function (CheckResult $response) use (&$checkScore, $logger) {
+
+                $logger->info('Check result received');
 
                 $checkScore = $response->getQuality()->getScore();
             }, function (Exception $reason) {
