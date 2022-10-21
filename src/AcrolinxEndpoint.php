@@ -30,7 +30,7 @@ use Acrolinx\SDK\Models\PollingLink;
 use Acrolinx\SDK\Models\Response\ProgressResponse;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
-use Clue\React\Buzz\Browser;
+use React\Http\Browser;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\LoopInterface;
