@@ -53,7 +53,7 @@ Our [tests](tests/AcrolinxEndpointTest.php) cover a lot of use cases already. Us
 
 * rename the `.env.conf`file to `.env`
 * set `ACROLINX_TEST_SERVER_URL` and `ACROLINX_ACCESS_TOKEN` in this file. ([Get an access token](https://docs.acrolinx.com/cli/latest/en/how-to/get-an-access-token))
-* set `set ACROLINX_SSO_USER` and `ACROLINX_SSO_PASSWORD` (You can request the SSO password from Acrolinx support)
+* set `ACROLINX_SSO_USER` and `ACROLINX_SSO_PASSWORD` (You can request the SSO password from Acrolinx support)
 * set `ACROLINX_DEV_SIGNATURE` to unique signature provided for your integration. (Note: Signature and access token are different)
 * run `composer test` to run unit tests
 
