@@ -30,7 +30,7 @@ use Acrolinx\SDK\Models\PollingLink;
 use Acrolinx\SDK\Models\Response\ProgressResponse;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
-use Clue\React\Buzz\Browser;
+use React\Http\Browser;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\LoopInterface;
@@ -105,11 +105,6 @@ class AcrolinxEndpoint
         if (!is_null($authToken)) {
             $headers['X-Acrolinx-Auth'] = $authToken;
         }
-
-        if(isset($_SERVER['HTTP_HOST'])) {
-            $headers['Host'] = $_SERVER['HTTP_HOST'];
-        }
-
 
         return $headers;
     }
@@ -243,11 +238,10 @@ class AcrolinxEndpoint
 
         $pollingLoop->addPeriodicTimer(1, function (TimerInterface $timer)
         use ($deferred, &$pollingLoop, &$authToken, &$url) {
-
             $this->client->get($url->getUrl(), $this->getCommonHeaders($authToken))->then(
                 function (ResponseInterface $response) use ($deferred, &$pollingLoop, &$timer) {
+
                     if ($response->getStatusCode() == 202 || $response->getStatusCode() == 201) {
-                        fwrite(STDERR, print_r(PHP_EOL . 'Progress status: ' . $response->getStatusCode() . PHP_EOL));
                         $progressResponse = new ProgressResponse($response);
                         sleep($progressResponse->getRetryAfter());
 
@@ -262,6 +256,7 @@ class AcrolinxEndpoint
                     'Unable to fetch check result');
                 $deferred->reject($exception);
                 $pollingLoop->cancelTimer($timer);
+
             });
         });
 

@@ -1,4 +1,4 @@
-# SDK-PHP [![Build Status](https://travis-ci.org/acrolinx/sdk-php.svg?branch=master)](https://travis-ci.org/acrolinx/sdk-php)
+# SDK-PHP [![CI SDK PHP](https://github.com/acrolinx/sdk-php/actions/workflows/main.yml/badge.svg)](https://github.com/acrolinx/sdk-php/actions/workflows/main.yml)
 
 [![Latest Stable Version](https://poser.pugx.org/acrolinx/sdk/v/stable)](https://packagist.org/packages/acrolinx/sdk)
 [![Total Downloads](https://poser.pugx.org/acrolinx/sdk/downloads)](https://packagist.org/packages/acrolinx/sdk)
@@ -40,7 +40,7 @@ Our [tests](tests/AcrolinxEndpointTest.php) cover a lot of use cases already. Us
 
 ### Prerequisites
 
-* Have PHP 7.x installed
+* Have PHP 8.0 or above installed
 * Have php-curl installed
 * Have composer installed [Find a tutorial here.](https://www.hostinger.com/tutorials/how-to-install-composer)
 
@@ -53,6 +53,8 @@ Our [tests](tests/AcrolinxEndpointTest.php) cover a lot of use cases already. Us
 
 * rename the `.env.conf`file to `.env`
 * set `ACROLINX_TEST_SERVER_URL` and `ACROLINX_ACCESS_TOKEN` in this file. ([Get an access token](https://docs.acrolinx.com/cli/latest/en/how-to/get-an-access-token))
+* set `ACROLINX_SSO_USER` and `ACROLINX_SSO_PASSWORD` (You can request the SSO password from Acrolinx support)
+* set `ACROLINX_DEV_SIGNATURE` to unique signature provided for your integration. (Note: Signature and access token are different)
 * run `composer test` to run unit tests
 
 ## License

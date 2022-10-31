@@ -2,10 +2,19 @@ name: CI SDK PHP
 
 on:
   push:
-    branches:
-      - '*'
+    branches: [main]
+    tags:
+      - "v*.*.*"
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "0 2 * * *" # Everyday at 2:00AM
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Trigger Comment (Optional)"
+        required: false
+        default: "Manual Workflow Run"
 
 
 jobs:
