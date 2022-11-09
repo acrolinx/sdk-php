@@ -182,19 +182,34 @@ class AcrolinxEndpoint
      * @param CheckRequest $request
      * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\CheckResponse} or Exception
      */
-    public function check(string $authToken, CheckRequest $request): PromiseInterface
+    public function check(string $authToken, CheckRequest $request, $attempt = 1): PromiseInterface
     {
         $deferred = new Deferred();
 
         $this->client->post($this->props->platformUrl . '/api/v1/checking/checks',
             $this->getCommonHeaders($authToken), $request->getJson())->then(function (ResponseInterface $response)
-        use ($deferred) {
+        use ($request, $authToken, $attempt, $deferred) {
             $checkResponse = new CheckResponse($response);
             $deferred->resolve($checkResponse);
-        }, function (Exception $reason) use ($deferred) {
-            $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
-                $reason->getPrevious(), 'Submitting check failed');
-            $deferred->reject($exception);
+        }, function (Exception $reason) use ($request, $authToken, $attempt, $deferred) {
+            $responseCode = $reason->getCode();
+            $retryAfterExists = $reason->getResponse()->getHeaders()['retry-after'];
+
+            if ($responseCode == 429 && $attempt <= 5 && $retryAfterExists) {
+                $retryAfter = $retryAfterExists[0] * 1000;
+                $retryInterval = $retryAfter * pow(2, $attempt);
+                $this->loop->addTimer($retryInterval, function () use ($authToken, $request, $attempt, $deferred) {
+                    $this->check($authToken, $request, ++$attempt)->then(function (CheckResponse $checkResponse) use ($deferred) {
+                        $deferred->resolve($checkResponse);
+                    }, function (Exception $reason) use ($deferred) {
+                        $deferred->reject($reason);
+                    });
+                });
+            } else {
+                $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
+                    $reason->getPrevious(), 'Submitting check failed');
+                $deferred->reject($exception);
+            }
         });
 
         return $deferred->promise();
