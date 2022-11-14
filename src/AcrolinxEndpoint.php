@@ -30,6 +30,8 @@ use Acrolinx\SDK\Models\PollingLink;
 use Acrolinx\SDK\Models\Response\ProgressResponse;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Utils\AcrolinxLogger;
+use Monolog\Logger;
 use React\Http\Browser;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
@@ -45,17 +47,20 @@ class AcrolinxEndpoint
     private $props = null;
     private $client;
     private $loop;
+    private $logger;
 
     /**
      * AcrolinxEndpoint constructor.
      * @param AcrolinxEndPointProperties $props
      * @param LoopInterface $loop
+     * @param $logger
      */
-    public function __construct(AcrolinxEndPointProperties $props, LoopInterface $loop)
+    public function __construct(AcrolinxEndPointProperties $props, LoopInterface $loop, $logger)
     {
         $this->props = $props;
         $this->client = new Browser($loop);
         $this->loop = $loop;
+        $this->logger = AcrolinxLogger::getInstance('./logs/acrolinx.log', Logger::INFO);
     }
 
     /**
@@ -196,6 +201,7 @@ class AcrolinxEndpoint
             $retryAfterExists = $this->getRetryAfter($reason->getResponse());
 
             if ($responseCode == 429 && $attempt <= 5 && $retryAfterExists) {
+                $this->logger->info('Check failed with 429. Retrying attempt # ' . $attempt);
                 $retryAfter = $retryAfterExists[0] * 1000;
                 $retryInterval = $retryAfter * pow(2, $attempt);
                 $this->loop->addTimer($retryInterval, function () use ($authToken, $request, $attempt, $deferred) {
