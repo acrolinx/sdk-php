@@ -55,7 +55,7 @@ class AcrolinxEndpoint
      * @param LoopInterface $loop
      * @param $logger
      */
-    public function __construct(AcrolinxEndPointProperties $props, LoopInterface $loop, $logger)
+    public function __construct(AcrolinxEndPointProperties $props, LoopInterface $loop)
     {
         $this->props = $props;
         $this->client = new Browser($loop);
