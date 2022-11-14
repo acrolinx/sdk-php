@@ -193,7 +193,7 @@ class AcrolinxEndpoint
             $deferred->resolve($checkResponse);
         }, function (Exception $reason) use ($request, $authToken, $attempt, $deferred) {
             $responseCode = $reason->getCode();
-            $retryAfterExists = $reason->getResponse()->getHeaders()['retry-after'];
+            $retryAfterExists = $this->getRetryAfter($reason->getResponse());
 
             if ($responseCode == 429 && $attempt <= 5 && $retryAfterExists) {
                 $retryAfter = $retryAfterExists[0] * 1000;
@@ -213,6 +213,24 @@ class AcrolinxEndpoint
         });
 
         return $deferred->promise();
+    }
+
+    /**
+     * Get Retry-After Header.
+     *
+     * @param ResponseInterface $response
+     * @return array|null
+     */
+    private function getRetryAfter(ResponseInterface $response): ?array
+    {
+        $retryAfter = $response->getHeaders()['Retry-After'];
+        if (empty($retryAfter)) {
+            $retryAfter = $response->getHeaders()['retry-after'];
+        }
+        if (empty($retryAfter)) {
+            $retryAfter = $response->getHeaders()['RETRY-AFTER'];
+        }
+        return $retryAfter;
     }
 
     /**
