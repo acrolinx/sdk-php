@@ -30,6 +30,8 @@ use Acrolinx\SDK\Models\PollingLink;
 use Acrolinx\SDK\Models\Response\ProgressResponse;
 use Acrolinx\SDK\Models\SignInSuccessData;
 use Acrolinx\SDK\Models\SsoSignInOptions;
+use Acrolinx\SDK\Utils\AcrolinxLogger;
+use Monolog\Logger;
 use React\Http\Browser;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
@@ -45,17 +47,20 @@ class AcrolinxEndpoint
     private $props = null;
     private $client;
     private $loop;
+    private $logger;
 
     /**
      * AcrolinxEndpoint constructor.
      * @param AcrolinxEndPointProperties $props
      * @param LoopInterface $loop
+     * @param $logger
      */
     public function __construct(AcrolinxEndPointProperties $props, LoopInterface $loop)
     {
         $this->props = $props;
         $this->client = new Browser($loop);
         $this->loop = $loop;
+        $this->logger = AcrolinxLogger::getInstance('./logs/acrolinx.log', Logger::INFO);
     }
 
     /**
@@ -182,22 +187,56 @@ class AcrolinxEndpoint
      * @param CheckRequest $request
      * @return PromiseInterface containing {@see \Acrolinx\SDK\Models\CheckResponse} or Exception
      */
-    public function check(string $authToken, CheckRequest $request): PromiseInterface
+    public function check(string $authToken, CheckRequest $request, $attempt = 1): PromiseInterface
     {
         $deferred = new Deferred();
 
         $this->client->post($this->props->platformUrl . '/api/v1/checking/checks',
             $this->getCommonHeaders($authToken), $request->getJson())->then(function (ResponseInterface $response)
-        use ($deferred) {
+        use ($request, $authToken, $attempt, $deferred) {
             $checkResponse = new CheckResponse($response);
             $deferred->resolve($checkResponse);
-        }, function (Exception $reason) use ($deferred) {
-            $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
-                $reason->getPrevious(), 'Submitting check failed');
-            $deferred->reject($exception);
+        }, function (Exception $reason) use ($request, $authToken, $attempt, $deferred) {
+            $responseCode = $reason->getCode();
+            $retryAfterExists = $this->getRetryAfter($reason->getResponse());
+
+            if ($responseCode == 429 && $attempt <= 5 && $retryAfterExists) {
+                $this->logger->info('Check failed with 429. Retrying attempt # ' . $attempt);
+                $retryAfter = $retryAfterExists[0] * 1000;
+                $retryInterval = $retryAfter * pow(2, $attempt);
+                $this->loop->addTimer($retryInterval, function () use ($authToken, $request, $attempt, $deferred) {
+                    $this->check($authToken, $request, ++$attempt)->then(function (CheckResponse $checkResponse) use ($deferred) {
+                        $deferred->resolve($checkResponse);
+                    }, function (Exception $reason) use ($deferred) {
+                        $deferred->reject($reason);
+                    });
+                });
+            } else {
+                $exception = new AcrolinxServerException($reason->getMessage(), $reason->getCode(),
+                    $reason->getPrevious(), 'Submitting check failed');
+                $deferred->reject($exception);
+            }
         });
 
         return $deferred->promise();
+    }
+
+    /**
+     * Get Retry-After Header.
+     *
+     * @param ResponseInterface $response
+     * @return array|null
+     */
+    private function getRetryAfter(ResponseInterface $response): ?array
+    {
+        $retryAfter = $response->getHeaders()['Retry-After'];
+        if (empty($retryAfter)) {
+            $retryAfter = $response->getHeaders()['retry-after'];
+        }
+        if (empty($retryAfter)) {
+            $retryAfter = $response->getHeaders()['RETRY-AFTER'];
+        }
+        return $retryAfter;
     }
 
     /**
