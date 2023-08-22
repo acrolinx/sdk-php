@@ -6,3 +6,6 @@ tmp
 logs/acrolinx.log
 .phpunit.result.cache
 tests/logs/acrolinx.log
+
+# Eclipse
+.project
