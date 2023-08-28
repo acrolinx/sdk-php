@@ -6,3 +6,9 @@ updates:
       interval: "daily"
     reviewers:
       - abhijeetnarvekar
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    reviewers:
+      - abhijeetnarvekar
