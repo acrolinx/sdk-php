@@ -8,14 +8,8 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: "0 2 * * *" # Everyday at 2:00AM
+    - cron: "0 2 * * *"
   workflow_dispatch:
-    inputs:
-      reason:
-        description: "Trigger Comment (Optional)"
-        required: false
-        default: "Manual Workflow Run"
-
 
 jobs:
   test:
@@ -28,11 +22,14 @@ jobs:
       ACROLINX_DEV_SIGNATURE: ${{ secrets.ACROLINX_DEV_SIGNATURE }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
+
       - run: composer install
       - run: composer update
       - run: composer test
-
