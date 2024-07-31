@@ -12,3 +12,4 @@ updates:
       interval: "daily"
     reviewers:
       - abhijeetnarvekar
+    versioning-strategy: increase
