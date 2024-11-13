@@ -20,7 +20,7 @@
     "react/promise": "v3.2.0",
     "react/http": "v1.10.0",
     "myclabs/php-enum": "^1.8.4",
-    "monolog/monolog": "^3.7.0",
+    "monolog/monolog": "^3.8.0",
     "ramsey/uuid": "^4.7.6"
   },
   "require-dev": {
