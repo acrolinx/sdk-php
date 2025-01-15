@@ -19,7 +19,7 @@
     "react/event-loop": "v1.5.0",
     "react/promise": "v3.2.0",
     "react/http": "v1.11.0",
-    "myclabs/php-enum": "^1.8.4",
+    "myclabs/php-enum": "^1.8.5",
     "monolog/monolog": "^3.8.1",
     "ramsey/uuid": "^4.7.6"
   },
